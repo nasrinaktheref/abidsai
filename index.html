@@ -1,1 +1,1834 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABID'S AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7, #dda0dd, #98d8c8);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
+        .dark body {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7, #dda0dd, #98d8c8);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+        }
 
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            25% { background-position: 100% 50%; }
+            50% { background-position: 100% 100%; }
+            75% { background-position: 50% 100%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .tool-card {
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .tool-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+        .dark .tool-card {
+             background-color: rgba(30, 41, 59, 0.6);
+             border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        #ai-chat-output {
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            height: 400px;
+            overflow-y: auto;
+        }
+        .dark #ai-chat-output {
+             background-color: rgba(30, 41, 59, 0.7);
+             border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .chat-message {
+            max-width: 80%;
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            margin-bottom: 0.5rem;
+            line-height: 1.5;
+        }
+        .user-message {
+            background-color: #4f46e5;
+            color: white;
+            border-bottom-right-radius: 0.25rem;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+        .ai-message {
+            background-color: #e5e7eb;
+            color: #1f2937;
+            border-bottom-left-radius: 0.25rem;
+            align-self: flex-start;
+        }
+        .dark .ai-message {
+            background-color: #374151;
+            color: #f3f4f6;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #6b7280;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        .cursor {
+            animation: blink 1s infinite;
+            color: #8b5cf6;
+            font-weight: bold;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .typing-text {
+            color: #1f2937;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="text-slate-800 dark:text-slate-200 antialiased">
+    <!-- Main Container -->
+    <div class="relative min-h-full container mx-auto px-4 py-8 sm:px-6 lg:px-8 text-black">
+
+        <!-- Language and Theme Controls -->
+        <div class="absolute top-4 right-4 z-10 flex gap-3">
+            <!-- Language Selector -->
+            <select id="language-selector" class="bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold backdrop-blur-sm border-2 border-white/30 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-4 focus:ring-purple-300 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer">
+                <option value="en" class="bg-blue-600 text-white">🇺🇸 English</option>
+                <option value="ar" class="bg-blue-600 text-white">🇸🇦 العربية</option>
+                <option value="hi" class="bg-blue-600 text-white">🇮🇳 हिंदी</option>
+                <option value="fa" class="bg-blue-600 text-white">🇮🇷 فارسی</option>
+                <option value="bn" class="bg-blue-600 text-white">🇧🇩 বাংলা</option>
+            </select>
+            
+            <!-- Dark Mode Toggle -->
+            <button id="theme-toggle" type="button" class="text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 focus:outline-none focus:ring-4 focus:ring-slate-200 dark:focus:ring-slate-700 rounded-lg text-sm p-2.5">
+                <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M17.293 13.293A8 8 0 716.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                </svg>
+                <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 2L13.09 8.26L20 9L14 14.74L15.18 21.02L10 17.77L4.82 21.02L6 14.74L0 9L6.91 8.26L10 2Z"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Header Section -->
+        <header class="text-center mb-12">
+            <div class="flex items-center justify-center mb-4">
+                <img src="https://github.com/nasrinaktheref/abidsai/blob/5008a02ac1aa4447422c00e488e30dc891f53a12/Gemini_Generated_Image_t0sg6ut0sg6ut0sg.png?raw=true" 
+                     alt="ABID'S AI Logo" 
+                     class="w-16 h-16 mr-4 rounded-full shadow-lg"
+                     onerror="this.src=''; this.alt='Logo failed to load'; this.style.display='none';">
+                <h1 class="text-6xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent animate-pulse">
+                    ABID'S AI
+                </h1>
+            </div>
+            <div class="relative">
+                <p id="animated-subtitle" class="text-2xl text-black max-w-3xl mx-auto font-bold bg-white/80 backdrop-blur-sm rounded-2xl px-8 py-4 shadow-lg border-2 border-purple-200">
+                    <span class="typing-text"></span>
+                    <span class="cursor">|</span>
+                </p>
+            </div>
+        </header>
+
+        <!-- AI Tools Grid -->
+        <section class="mb-16">
+            <h2 class="text-5xl font-bold text-center mb-12 text-black">AI Tools & Features</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <!-- Text Generator -->
+                <div class="tool-card rounded-2xl p-6">
+                    <div class="text-4xl mb-4">✨</div>
+                    <h3 class="text-2xl font-bold mb-3 text-black">Text Generator</h3>
+                    <p class="text-lg text-black mb-4">Generate creative content with AI</p>
+                    <button onclick="openTextGenerator()" class="w-full bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white py-3 px-6 rounded-lg hover:from-violet-600 hover:to-fuchsia-600 transition-all shadow-lg hover:shadow-xl text-lg font-semibold">
+                        Try Now
+                    </button>
+                </div>
+
+                <!-- Image Analyzer -->
+                <div class="tool-card rounded-2xl p-6">
+                    <div class="text-4xl mb-4">🖼️</div>
+                    <h3 class="text-2xl font-bold mb-3 text-black">Image Analyzer</h3>
+                    <p class="text-lg text-black mb-4">Analyze and describe images with AI</p>
+                    <button onclick="openImageAnalyzer()" class="w-full bg-gradient-to-r from-sky-500 to-cyan-400 text-white py-3 px-6 rounded-lg hover:from-sky-600 hover:to-cyan-500 transition-all shadow-lg hover:shadow-xl text-lg font-semibold">
+                        Try Now
+                    </button>
+                </div>
+
+                <!-- Code Assistant -->
+                <div class="tool-card rounded-2xl p-6">
+                    <div class="text-4xl mb-4">💻</div>
+                    <h3 class="text-2xl font-bold mb-3 text-black">Code Assistant</h3>
+                    <p class="text-lg text-black mb-4">Get help with programming tasks</p>
+                    <button onclick="openCodeAssistant()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-400 text-white py-3 px-6 rounded-lg hover:from-emerald-600 hover:to-teal-500 transition-all shadow-lg hover:shadow-xl text-lg font-semibold">
+                        Try Now
+                    </button>
+                </div>
+
+                <!-- Language Translator -->
+                <div class="tool-card rounded-2xl p-6">
+                    <div class="text-4xl mb-4">🌍</div>
+                    <h3 class="text-2xl font-bold mb-3 text-black">Language Translator</h3>
+                    <p class="text-lg text-black mb-4">Translate text between languages</p>
+                    <button onclick="openTranslator()" class="w-full bg-gradient-to-r from-orange-500 to-rose-500 text-white py-3 px-6 rounded-lg hover:from-orange-600 hover:to-rose-600 transition-all shadow-lg hover:shadow-xl text-lg font-semibold">
+                        Try Now
+                    </button>
+                </div>
+
+                <!-- Math Solver -->
+                <div class="tool-card rounded-2xl p-6">
+                    <div class="text-4xl mb-4">🧮</div>
+                    <h3 class="text-2xl font-bold mb-3 text-black">Math Solver</h3>
+                    <p class="text-lg text-black mb-4">Solve complex mathematical problems</p>
+                    <button onclick="openMathSolver()" class="w-full bg-gradient-to-r from-indigo-500 to-violet-500 text-white py-3 px-6 rounded-lg hover:from-indigo-600 hover:to-violet-600 transition-all shadow-lg hover:shadow-xl text-lg font-semibold">
+                        Try Now
+                    </button>
+                </div>
+
+                <!-- Creative Writer -->
+                <div class="tool-card rounded-2xl p-6">
+                    <div class="text-4xl mb-4">📝</div>
+                    <h3 class="text-2xl font-bold mb-3 text-black">Creative Writer</h3>
+                    <p class="text-lg text-black mb-4">Write stories, poems, and more</p>
+                    <button onclick="openCreativeWriter()" class="w-full bg-gradient-to-r from-pink-500 to-fuchsia-500 text-white py-3 px-6 rounded-lg hover:from-pink-600 hover:to-fuchsia-600 transition-all shadow-lg hover:shadow-xl text-lg font-semibold">
+                        Try Now
+                    </button>
+                </div>
+
+                <!-- Quiz Generator -->
+                <div class="tool-card rounded-2xl p-6">
+                    <div class="text-4xl mb-4">🧠</div>
+                    <h3 class="text-2xl font-bold mb-3 text-black">Quiz Generator</h3>
+                    <p class="text-lg text-black mb-4">Create educational quizzes and tests</p>
+                    <button onclick="openQuizGenerator()" class="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all shadow-lg hover:shadow-xl text-lg font-semibold">
+                        Try Now
+                    </button>
+                </div>
+
+                <!-- Study Helper -->
+                <div class="tool-card rounded-2xl p-6">
+                    <div class="text-4xl mb-4">📚</div>
+                    <h3 class="text-2xl font-bold mb-3 text-black">Study Helper</h3>
+                    <p class="text-lg text-black mb-4">Get help with homework and learning</p>
+                    <button onclick="openStudyHelper()" class="w-full bg-gradient-to-r from-teal-500 to-green-500 text-white py-3 px-6 rounded-lg hover:from-teal-600 hover:to-green-600 transition-all shadow-lg hover:shadow-xl text-lg font-semibold">
+                        Try Now
+                    </button>
+                </div>
+
+                <!-- Joke Generator -->
+                <div class="tool-card rounded-2xl p-6">
+                    <div class="text-4xl mb-4">😂</div>
+                    <h3 class="text-2xl font-bold mb-3 text-black">Joke Generator</h3>
+                    <p class="text-lg text-black mb-4">Get funny jokes and entertainment</p>
+                    <button onclick="openJokeGenerator()" class="w-full bg-gradient-to-r from-red-500 to-pink-500 text-white py-3 px-6 rounded-lg hover:from-red-600 hover:to-pink-600 transition-all shadow-lg hover:shadow-xl text-lg font-semibold">
+                        Try Now
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Weather Update Section -->
+        <section class="mb-16">
+            <h2 id="weather-section-title" class="text-4xl font-bold text-center mb-8 text-black">🌤️ Weather Update Center</h2>
+            <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Current Weather -->
+                <div class="tool-card rounded-2xl p-8 relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-br from-blue-200/30 via-cyan-200/30 to-sky-200/30 animate-pulse"></div>
+                    <div class="relative z-10">
+                        <div class="text-center mb-6">
+                            <div class="text-6xl mb-4" id="weather-icon">🌤️</div>
+                            <h3 id="current-weather-title" class="text-2xl font-bold text-black mb-2">Current Weather</h3>
+                            <div class="flex items-center justify-center gap-2 mb-4">
+                                <input type="text" id="city-input" placeholder="Enter city name (e.g., London, New York)" class="px-4 py-3 rounded-lg border bg-gradient-to-r from-blue-200 to-purple-200 dark:bg-gradient-to-r dark:from-blue-800 dark:to-purple-800 text-center text-lg font-medium w-80 text-black dark:text-white">
+                                <button onclick="getWeather()" class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all text-lg">🔍</button>
+                            </div>
+                        </div>
+                        
+                        <div id="weather-display" class="text-center">
+                            <div class="text-5xl font-bold text-black mb-3" id="temperature">--°C</div>
+                            <div class="text-xl font-semibold text-black mb-3" id="weather-desc">Enter city name to see weather</div>
+                            <div class="text-lg text-black" id="location">📍 Location</div>
+                            
+                            <div class="grid grid-cols-2 gap-4 mt-6">
+                                <div class="bg-white/60 dark:bg-slate-800/60 p-4 rounded-lg">
+                                    <div id="humidity-label" class="text-black text-lg font-medium">Humidity</div>
+                                    <div class="font-bold text-2xl text-black" id="humidity">--%</div>
+                                </div>
+                                <div class="bg-white/60 dark:bg-slate-800/60 p-4 rounded-lg">
+                                    <div id="wind-speed-label" class="text-black text-lg font-medium">Wind Speed</div>
+                                    <div class="font-bold text-2xl text-black" id="wind-speed">-- km/h</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 text-center">
+                            <button id="use-location-btn" onclick="getCurrentLocation()" class="bg-gradient-to-r from-green-500 to-emerald-500 text-white py-3 px-8 rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all text-lg font-semibold">
+                                📍 Use My Location
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Weather News & Updates -->
+                <div class="tool-card rounded-2xl p-8 relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-br from-orange-200/30 via-yellow-200/30 to-red-200/30 animate-pulse"></div>
+                    <div class="relative z-10">
+                        <div class="text-center mb-6">
+                            <div class="text-6xl mb-4">📰</div>
+                            <h3 id="weather-news-title" class="text-2xl font-bold text-black mb-4">Weather News & Updates</h3>
+                        </div>
+                        
+                        <div id="weather-news" class="space-y-4">
+                            <div class="bg-white dark:bg-white p-5 rounded-lg border-l-4 border-blue-500">
+                                <h4 id="news-1-title" class="font-bold text-black mb-3 text-lg">🌡️ Global Temperature Update</h4>
+                                <p id="news-1-desc" class="text-base text-black mb-3 font-medium">Latest climate monitoring reports show temperature variations across different regions.</p>
+                                <a href="https://weather.com/news" target="_blank" rel="noopener noreferrer" id="news-1-link" class="text-blue-600 hover:text-blue-800 text-base font-bold">Read More →</a>
+                            </div>
+                            
+                            <div class="bg-white dark:bg-white p-5 rounded-lg border-l-4 border-green-500">
+                                <h4 id="news-2-title" class="font-bold text-black mb-3 text-lg">🌧️ Monsoon Forecast</h4>
+                                <p id="news-2-desc" class="text-base text-black mb-3 font-medium">Seasonal weather patterns and rainfall predictions for upcoming months.</p>
+                                <a href="https://www.accuweather.com/en/weather-news" target="_blank" rel="noopener noreferrer" id="news-2-link" class="text-blue-600 hover:text-blue-800 text-base font-bold">View Forecast →</a>
+                            </div>
+                            
+                            <div class="bg-white dark:bg-white p-5 rounded-lg border-l-4 border-orange-500">
+                                <h4 id="news-3-title" class="font-bold text-black mb-3 text-lg">⚡ Storm Alerts</h4>
+                                <p id="news-3-desc" class="text-base text-black mb-3 font-medium">Real-time storm tracking and severe weather warnings for your safety.</p>
+                                <a href="https://www.weatherunderground.com/news" target="_blank" rel="noopener noreferrer" id="news-3-link" class="text-blue-600 hover:text-blue-800 text-base font-bold">View Alerts →</a>
+                            </div>
+                            
+                            <div class="bg-white dark:bg-white p-5 rounded-lg border-l-4 border-purple-500">
+                                <h4 id="news-4-title" class="font-bold text-black mb-3 text-lg">🌍 Climate Updates</h4>
+                                <p id="news-4-desc" class="text-base text-black mb-3 font-medium">Environmental news and climate change updates from around the world.</p>
+                                <a href="https://www.bbc.com/weather" target="_blank" rel="noopener noreferrer" id="news-4-link" class="text-blue-600 hover:text-blue-800 text-base font-bold">Learn More →</a>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 text-center">
+                            <button id="refresh-news-btn" onclick="refreshWeatherNews()" class="bg-gradient-to-r from-blue-500 to-purple-500 text-white py-3 px-8 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all text-lg font-semibold">
+                                🔄 Refresh News
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Live Updates Section -->
+        <section class="mb-16">
+            <h2 id="live-fun-zone-title" class="text-4xl font-bold text-center mb-8 text-black">🎉 Live Fun Zone</h2>
+            <div class="max-w-4xl mx-auto">
+                <div class="tool-card rounded-2xl p-8 text-center relative overflow-hidden">
+                    <!-- Animated Background -->
+                    <div class="absolute inset-0 bg-gradient-to-br from-yellow-200/30 via-pink-200/30 to-purple-200/30 animate-pulse"></div>
+                    <div class="relative z-10">
+                        <div class="text-6xl mb-4 animate-bounce">🎭</div>
+                        <h3 id="daily-joke-title" class="text-3xl font-bold mb-4 text-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">Daily Joke Update</h3>
+                        
+                        <!-- Joke Display Area -->
+                        <div id="live-joke" class="text-xl text-black mb-6 p-6 bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900/30 dark:to-orange-900/30 rounded-xl border-2 border-yellow-300 dark:border-yellow-600 shadow-inner min-h-[120px] flex items-center justify-center">
+                            <div class="text-center">
+                                <div class="text-4xl mb-2">🎪</div>
+                                <div id="joke-loading-text">Loading a fresh joke for you... 😄</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Joke Counter -->
+                        <div class="mb-4">
+                            <span id="jokes-enjoyed-text" class="text-sm text-gray-600 dark:text-gray-400">Jokes Enjoyed Today: </span>
+                            <span id="joke-counter" class="text-lg font-bold text-purple-600 dark:text-purple-400">0</span>
+                            <span class="text-2xl ml-2">🎉</span>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                            <button id="get-new-joke-btn" onclick="getNewJoke()" class="bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 px-8 rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all shadow-lg hover:shadow-xl text-lg font-semibold transform hover:scale-105">
+                                Get New Joke! 🎪
+                            </button>
+                            <button id="surprise-me-btn" onclick="getRandomJokeCategory()" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-3 px-8 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all shadow-lg hover:shadow-xl text-lg font-semibold transform hover:scale-105">
+                                Surprise Me! 🎲
+                            </button>
+                        </div>
+                        
+                        <!-- Joke Categories -->
+                        <div class="mt-6">
+                            <p id="choose-type-text" class="text-sm text-gray-600 dark:text-gray-400 mb-3">Choose your favorite type:</p>
+                            <div class="flex flex-wrap gap-2 justify-center">
+                                <button id="funny-btn" onclick="getJokeByCategory('funny')" class="px-4 py-2 bg-yellow-200 hover:bg-yellow-300 dark:bg-yellow-800 dark:hover:bg-yellow-700 rounded-full text-sm font-medium transition-all text-white">😂 Funny</button>
+                                <button id="dad-jokes-btn" onclick="getJokeByCategory('dad')" class="px-4 py-2 bg-blue-200 hover:bg-blue-300 dark:bg-blue-800 dark:hover:bg-blue-700 rounded-full text-sm font-medium transition-all text-white">👨 Dad Jokes</button>
+                                <button id="smart-btn" onclick="getJokeByCategory('smart')" class="px-4 py-2 bg-green-200 hover:bg-green-300 dark:bg-green-800 dark:hover:bg-green-700 rounded-full text-sm font-medium transition-all text-white">🧠 Smart</button>
+                                <button id="silly-btn" onclick="getJokeByCategory('silly')" class="px-4 py-2 bg-pink-200 hover:bg-pink-300 dark:bg-pink-800 dark:hover:bg-pink-700 rounded-full text-sm font-medium transition-all text-white">🤪 Silly</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Chat Interface -->
+        <section class="mb-16">
+            <h2 class="text-5xl font-bold text-center mb-8 text-black">Chat with AI</h2>
+            <div class="max-w-4xl mx-auto">
+                <div id="ai-chat-output" class="flex flex-col">
+                    <div class="chat-message ai-message">
+                        Hello! I'm ABID's AI assistant. How can I help you today?
+                    </div>
+                </div>
+                <div class="mt-4 flex gap-2">
+                    <input type="text" id="chat-input" placeholder="Ask me anything..." 
+                           class="flex-1 px-6 py-4 rounded-lg border border-slate-300 dark:border-slate-600 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-purple-500 text-lg">
+                    <button onclick="sendMessage()" class="px-8 py-4 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white rounded-lg hover:from-violet-600 hover:to-fuchsia-600 transition-all shadow-lg hover:shadow-xl text-lg font-semibold">
+                        Send
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center py-8 border-t border-slate-200 dark:border-slate-700">
+            <p class="text-lg text-black font-medium">
+                © 2024-2025 ABID'S AI. Powered by Abid Hasan (Hidden Talent☣️⚠️☢️⚜️) & Muzora.
+            </p>
+        </footer>
+    </div>
+
+    <!-- Modal for Tools -->
+    <div id="tool-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-lg rounded-2xl p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="modal-title" class="text-2xl font-bold"></h3>
+                <button onclick="closeModal()" class="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div id="modal-content"></div>
+        </div>
+    </div>
+
+    <script>
+        // Language translations
+        const translations = {
+            en: {
+                title: "ABID'S AI",
+                subtitle: "Explore the future of artificial intelligence with powerful tools and interactive experiences",
+                toolsTitle: "AI Tools & Features",
+                weatherTitle: "🌤️ Weather Update Center",
+                currentWeather: "Current Weather",
+                weatherNews: "Weather News & Updates",
+                textGenerator: "Text Generator",
+                textGeneratorDesc: "Generate creative content with AI",
+                imageAnalyzer: "Image Analyzer",
+                imageAnalyzerDesc: "Analyze and describe images with AI",
+                codeAssistant: "Code Assistant",
+                codeAssistantDesc: "Get help with programming tasks",
+                languageTranslator: "Language Translator",
+                languageTranslatorDesc: "Translate text between languages",
+                mathSolver: "Math Solver",
+                mathSolverDesc: "Solve complex mathematical problems",
+                creativeWriter: "Creative Writer",
+                creativeWriterDesc: "Write stories, poems, and more",
+                quizGenerator: "Quiz Generator",
+                quizGeneratorDesc: "Create educational quizzes and tests",
+                studyHelper: "Study Helper",
+                studyHelperDesc: "Get help with homework and learning",
+                jokeGenerator: "Joke Generator",
+                jokeGeneratorDesc: "Get funny jokes and entertainment",
+                liveFunZone: "🎉 Live Fun Zone",
+                dailyJoke: "Daily Joke Update",
+                jokeLoadingText: "Loading a fresh joke for you... 😄",
+                jokesEnjoyedText: "Jokes Enjoyed Today: ",
+                getNewJoke: "Get New Joke! 🎪",
+                surpriseMe: "Surprise Me! 🎲",
+                chooseType: "Choose your favorite type:",
+                funny: "😂 Funny",
+                dadJokes: "👨 Dad Jokes",
+                smart: "🧠 Smart",
+                silly: "🤪 Silly",
+                chatTitle: "Chat with AI",
+                chatPlaceholder: "Ask me anything...",
+                weatherPlaceholder: "Enter city name (e.g., London, New York)",
+                useLocation: "📍 Use My Location",
+                refreshNews: "🔄 Refresh News",
+                humidity: "Humidity",
+                windSpeed: "Wind Speed",
+                tryNow: "Try Now",
+                send: "Send",
+                footer: "© 2024 ABID'S AI. Powered by artificial intelligence.",
+                aiGreeting: "Hello! I'm ABID's AI assistant. How can I help you today?"
+            },
+            ar: {
+                title: "ذكاء عبيد الاصطناعي",
+                subtitle: "استكشف مستقبل الذكاء الاصطناعي مع أدوات قوية وتجارب تفاعلية",
+                toolsTitle: "أدوات وميزات الذكاء الاصطناعي",
+                weatherTitle: "🌤️ مركز تحديث الطقس",
+                currentWeather: "الطقس الحالي",
+                weatherNews: "أخبار وتحديثات الطقس",
+                weatherPlaceholder: "أدخل اسم المدينة (مثل: الرياض، دبي)",
+                weatherDesc: "أدخل اسم المدينة لرؤية الطقس",
+                location: "📍 الموقع",
+                humidity: "الرطوبة",
+                windSpeed: "سرعة الرياح",
+                useLocation: "📍 استخدم موقعي",
+                refreshNews: "🔄 تحديث الأخبار",
+                news1Title: "🌡️ تحديث درجات الحرارة العالمية",
+                news1Desc: "تظهر أحدث تقارير مراقبة المناخ تغيرات في درجات الحرارة عبر مناطق مختلفة.",
+                news1Link: "اقرأ المزيد →",
+                news2Title: "🌧️ توقعات الرياح الموسمية",
+                news2Desc: "أنماط الطقس الموسمية وتوقعات هطول الأمطار للأشهر القادمة.",
+                news2Link: "عرض التوقعات →",
+                news3Title: "⚡ تحذيرات العواصف",
+                news3Desc: "تتبع العواصف في الوقت الفعلي وتحذيرات الطقس القاسي لسلامتك.",
+                news3Link: "عرض التحذيرات →",
+                news4Title: "🌍 تحديثات المناخ",
+                news4Desc: "الأخبار البيئية العالمية وتحديثات تغير المناخ من جميع أنحاء العالم.",
+                news4Link: "تعلم المزيد →",
+                textGenerator: "مولد النصوص",
+                textGeneratorDesc: "إنشاء محتوى إبداعي بالذكاء الاصطناعي",
+                imageAnalyzer: "محلل الصور",
+                imageAnalyzerDesc: "تحليل ووصف الصور بالذكاء الاصطناعي",
+                codeAssistant: "مساعد البرمجة",
+                codeAssistantDesc: "احصل على المساعدة في مهام البرمجة",
+                languageTranslator: "مترجم اللغات",
+                languageTranslatorDesc: "ترجمة النصوص بين اللغات",
+                mathSolver: "حلال الرياضيات",
+                mathSolverDesc: "حل المسائل الرياضية المعقدة",
+                creativeWriter: "الكاتب الإبداعي",
+                creativeWriterDesc: "كتابة القصص والقصائد والمزيد",
+                quizGenerator: "مولد الاختبارات",
+                quizGeneratorDesc: "إنشاء اختبارات تعليمية",
+                studyHelper: "مساعد الدراسة",
+                studyHelperDesc: "المساعدة في الواجبات والتعلم",
+                jokeGenerator: "مولد النكت",
+                jokeGeneratorDesc: "احصل على نكت مضحكة وترفيه",
+                liveFunZone: "🎉 منطقة المرح المباشر",
+                dailyJoke: "نكتة اليوم",
+                jokeLoadingText: "جاري تحميل نكتة جديدة لك... 😄",
+                jokesEnjoyedText: "النكت المستمتع بها اليوم: ",
+                getNewJoke: "احصل على نكتة جديدة! 🎪",
+                surpriseMe: "فاجئني! 🎲",
+                chooseType: "اختر نوعك المفضل:",
+                funny: "😂 مضحك",
+                dadJokes: "👨 نكت الآباء",
+                smart: "🧠 ذكي",
+                silly: "🤪 سخيف",
+                chatTitle: "تحدث مع الذكاء الاصطناعي",
+                chatPlaceholder: "اسألني أي شيء...",
+                tryNow: "جرب الآن",
+                send: "إرسال",
+                footer: "© 2024 ذكاء عبيد الاصطناعي. مدعوم بالذكاء الاصطناعي.",
+                aiGreeting: "مرحباً! أنا مساعد عبيد للذكاء الاصطناعي. كيف يمكنني مساعدتك اليوم؟"
+            },
+            hi: {
+                title: "अबीद का AI",
+                subtitle: "शक्तिशाली उपकरणों और इंटरैक्टिव अनुभवों के साथ कृत्रिम बुद्धिमत्ता के भविष्य का अन्वेषण करें",
+                toolsTitle: "AI उपकरण और सुविधाएं",
+                weatherTitle: "🌤️ मौसम अपडेट केंद्र",
+                currentWeather: "वर्तमान मौसम",
+                weatherNews: "मौसम समाचार और अपडेट",
+                textGenerator: "टेक्स्ट जेनरेटर",
+                textGeneratorDesc: "AI के साथ रचनात्मक सामग्री बनाएं",
+                imageAnalyzer: "इमेज एनालाइज़र",
+                imageAnalyzerDesc: "AI के साथ छवियों का विश्लेषण और वर्णन करें",
+                codeAssistant: "कोड असिस्टेंट",
+                codeAssistantDesc: "प्रोग्रामिंग कार्यों में सहायता प्राप्त करें",
+                languageTranslator: "भाषा अनुवादक",
+                languageTranslatorDesc: "भाषाओं के बीच टेक्स्ट का अनुवाद करें",
+                mathSolver: "गणित समाधानकर्ता",
+                mathSolverDesc: "जटिल गणितीय समस्याओं को हल करें",
+                creativeWriter: "रचनात्मक लेखक",
+                creativeWriterDesc: "कहानियां, कविताएं और बहुत कुछ लिखें",
+                quizGenerator: "क्विज़ जेनरेटर",
+                quizGeneratorDesc: "शैक्षिक क्विज़ और टेस्ट बनाएं",
+                studyHelper: "अध्ययन सहायक",
+                studyHelperDesc: "होमवर्क और सीखने में मदद पाएं",
+                jokeGenerator: "जोक जेनरेटर",
+                jokeGeneratorDesc: "मज़ेदार जोक्स और मनोरंजन पाएं",
+                liveFunZone: "🎉 लाइव मज़ा ज़ोन",
+                dailyJoke: "दैनिक जोक अपडेट",
+                jokeLoadingText: "आपके लिए एक नया जोक लोड हो रहा है... 😄",
+                jokesEnjoyedText: "आज के मज़ेदार जोक्स: ",
+                getNewJoke: "नया जोक पाएं! 🎪",
+                surpriseMe: "मुझे आश्चर्यचकित करें! 🎲",
+                chooseType: "अपना पसंदीदा प्रकार चुनें:",
+                funny: "😂 मज़ेदार",
+                dadJokes: "👨 पापा के जोक्स",
+                smart: "🧠 स्मार्ट",
+                silly: "🤪 मूर्खतापूर्ण",
+                chatTitle: "AI के साथ चैट करें",
+                chatPlaceholder: "मुझसे कुछ भी पूछें...",
+                weatherPlaceholder: "शहर का नाम दर्ज करें (जैसे: दिल्ली, मुंबई)",
+                useLocation: "📍 मेरा स्थान उपयोग करें",
+                refreshNews: "🔄 समाचार रीफ्रेश करें",
+                humidity: "आर्द्रता",
+                windSpeed: "हवा की गति",
+                tryNow: "अभी आज़माएं",
+                send: "भेजें",
+                footer: "© 2024 अबीद का AI। कृत्रिम बुद्धिमत्ता द्वारा संचालित।",
+                aiGreeting: "नमस्ते! मैं अबीद का AI सहायक हूं। आज मैं आपकी कैसे मदद कर सकता हूं?"
+            },
+            fa: {
+                title: "هوش مصنوعی عبید",
+                subtitle: "آینده هوش مصنوعی را با ابزارهای قدرتمند و تجربیات تعاملی کشف کنید",
+                toolsTitle: "ابزارها و ویژگی‌های هوش مصنوعی",
+                weatherTitle: "🌤️ مرکز به‌روزرسانی آب و هوا",
+                currentWeather: "آب و هوای فعلی",
+                weatherNews: "اخبار و به‌روزرسانی آب و هوا",
+                textGenerator: "تولیدکننده متن",
+                textGeneratorDesc: "تولید محتوای خلاقانه با هوش مصنوعی",
+                imageAnalyzer: "تحلیلگر تصویر",
+                imageAnalyzerDesc: "تجزیه و تحلیل و توصیف تصاویر با هوش مصنوعی",
+                codeAssistant: "دستیار کد",
+                codeAssistantDesc: "کمک در وظایف برنامه‌نویسی دریافت کنید",
+                languageTranslator: "مترجم زبان",
+                languageTranslatorDesc: "ترجمه متن بین زبان‌ها",
+                mathSolver: "حل‌کننده ریاضی",
+                mathSolverDesc: "حل مسائل پیچیده ریاضی",
+                creativeWriter: "نویسنده خلاق",
+                creativeWriterDesc: "نوشتن داستان‌ها، شعرها و موارد بیشتر",
+                quizGenerator: "تولیدکننده آزمون",
+                quizGeneratorDesc: "ایجاد آزمون‌های آموزشی",
+                studyHelper: "دستیار مطالعه",
+                studyHelperDesc: "کمک در تکالیف و یادگیری",
+                jokeGenerator: "تولیدکننده جوک",
+                jokeGeneratorDesc: "دریافت جوک‌های خنده‌دار و سرگرمی",
+                liveFunZone: "🎉 منطقه سرگرمی زنده",
+                dailyJoke: "به‌روزرسانی جوک روزانه",
+                jokeLoadingText: "در حال بارگذاری جوک تازه برای شما... 😄",
+                jokesEnjoyedText: "جوک‌های لذت‌بخش امروز: ",
+                getNewJoke: "جوک جدید بگیرید! 🎪",
+                surpriseMe: "مرا غافلگیر کنید! 🎲",
+                chooseType: "نوع مورد علاقه خود را انتخاب کنید:",
+                funny: "😂 خنده‌دار",
+                dadJokes: "👨 جوک‌های پدری",
+                smart: "🧠 هوشمندانه",
+                silly: "🤪 احمقانه",
+                chatTitle: "گفتگو با هوش مصنوعی",
+                chatPlaceholder: "هر چیزی از من بپرسید...",
+                weatherPlaceholder: "نام شهر را وارد کنید (مثل: تهران، اصفهان)",
+                useLocation: "📍 از موقعیت من استفاده کنید",
+                refreshNews: "🔄 به‌روزرسانی اخبار",
+                humidity: "رطوبت",
+                windSpeed: "سرعت باد",
+                tryNow: "همین حالا امتحان کنید",
+                send: "ارسال",
+                footer: "© 2024 هوش مصنوعی عبید. قدرت گرفته از هوش مصنوعی.",
+                aiGreeting: "سلام! من دستیار هوش مصنوعی عبید هستم. امروز چگونه می‌توانم به شما کمک کنم؟"
+            },
+            bn: {
+                title: "আবিদের AI",
+                subtitle: "শক্তিশালী টুলস এবং ইন্টারঅ্যাক্টিভ অভিজ্ঞতার সাথে কৃত্রিম বুদ্ধিমত্তার ভবিষ্যৎ অন্বেষণ করুন",
+                toolsTitle: "AI টুলস এবং ফিচারসমূহ",
+                weatherTitle: "🌤️ আবহাওয়া আপডেট কেন্দ্র",
+                currentWeather: "বর্তমান আবহাওয়া",
+                weatherNews: "আবহাওয়া সংবাদ ও আপডেট",
+                weatherPlaceholder: "শহরের নাম লিখুন (যেমন: ঢাকা, চট্টগ্রাম)",
+                weatherDesc: "শহরের নাম লিখুন আবহাওয়া দেখতে",
+                location: "📍 স্থান",
+                humidity: "আর্দ্রতা",
+                windSpeed: "বাতাসের গতি",
+                useLocation: "📍 আমার অবস্থান ব্যবহার করুন",
+                refreshNews: "🔄 নতুন সংবাদ লোড করুন",
+                news1Title: "🌡️ বিশ্বব্যাপী তাপমাত্রা আপডেট",
+                news1Desc: "সর্বশেষ জলবায়ু পর্যবেক্ষণ রিপোর্ট বিভিন্ন অঞ্চলে তাপমাত্রার পরিবর্তন দেখাচ্ছে।",
+                news1Link: "আরও পড়ুন →",
+                news2Title: "🌧️ বর্ষাকালের পূর্বাভাস",
+                news2Desc: "আগামী মাসগুলির জন্য ঋতুগত আবহাওয়ার ধরন এবং বৃষ্টিপাতের পূর্বাভাস।",
+                news2Link: "পূর্বাভাস দেখুন →",
+                news3Title: "⚡ ঝড়ের সতর্কতা",
+                news3Desc: "আপনার নিরাপত্তার জন্য রিয়েল-টাইম ঝড় ট্র্যাকিং এবং গুরুতর আবহাওয়া সতর্কতা।",
+                news3Link: "সতর্কতা দেখুন →",
+                news4Title: "🌍 জলবায়ু আপডেট",
+                news4Desc: "বিশ্বব্যাপী পরিবেশগত সংবাদ এবং জলবায়ু পরিবর্তনের আপডেট।",
+                news4Link: "আরও জানুন →",
+                textGenerator: "টেক্সট জেনারেটর",
+                textGeneratorDesc: "AI দিয়ে সৃজনশীল কন্টেন্ট তৈরি করুন",
+                imageAnalyzer: "ইমেজ অ্যানালাইজার",
+                imageAnalyzerDesc: "AI দিয়ে ছবি বিশ্লেষণ এবং বর্ণনা করুন",
+                codeAssistant: "কোড অ্যাসিস্ট্যান্ট",
+                codeAssistantDesc: "প্রোগ্রামিং কাজে সাহায্য পান",
+                languageTranslator: "ভাষা অনুবাদক",
+                languageTranslatorDesc: "ভাষার মধ্যে টেক্সট অনুবাদ করুন",
+                mathSolver: "গণিত সমাধানকারী",
+                mathSolverDesc: "জটিল গাণিতিক সমস্যা সমাধান করুন",
+                creativeWriter: "সৃজনশীল লেখক",
+                creativeWriterDesc: "গল্প, কবিতা এবং আরও অনেক কিছু লিখুন",
+                quizGenerator: "কুইজ জেনারেটর",
+                quizGeneratorDesc: "শিক্ষামূলক কুইজ এবং পরীক্ষা তৈরি করুন",
+                studyHelper: "অধ্যয়ন সহায়ক",
+                studyHelperDesc: "হোমওয়ার্ক এবং শেখার ক্ষেত্রে সাহায্য পান",
+                jokeGenerator: "জোকস জেনারেটর",
+                jokeGeneratorDesc: "মজার জোকস এবং বিনোদন পান",
+                liveFunZone: "🎉 লাইভ মজার জোন",
+                dailyJoke: "দৈনিক জোকস আপডেট",
+                jokeLoadingText: "আপনার জন্য নতুন জোকস লোড হচ্ছে... 😄",
+                jokesEnjoyedText: "আজকের উপভোগ করা জোকস: ",
+                getNewJoke: "নতুন জোকস পান! 🎪",
+                surpriseMe: "আমাকে অবাক করুন! 🎲",
+                chooseType: "আপনার পছন্দের ধরন বেছে নিন:",
+                funny: "😂 মজার",
+                dadJokes: "👨 বাবার জোকস",
+                smart: "🧠 স্মার্ট",
+                silly: "🤪 বোকামি",
+                chatTitle: "AI এর সাথে চ্যাট করুন",
+                chatPlaceholder: "আমাকে যেকোনো কিছু জিজ্ঞাসা করুন...",
+                tryNow: "এখনই চেষ্টা করুন",
+                send: "পাঠান",
+                footer: "© 2024 আবিদের AI। কৃত্রিম বুদ্ধিমত্তা দ্বারা চালিত।",
+                aiGreeting: "হ্যালো! আমি আবিদের AI সহায়ক। আজ আমি আপনাকে কীভাবে সাহায্য করতে পারি?"
+            }
+        };
+
+        // Language functionality
+        const languageSelector = document.getElementById('language-selector');
+        let currentLanguage = localStorage.getItem('language') || 'bn';
+        languageSelector.value = currentLanguage;
+
+        function updateLanguage(lang) {
+            const t = translations[lang];
+            
+            // Update main content
+            document.querySelector('h1').textContent = t.title;
+            
+            // Update subtitle with typing animation
+            const subtitleElement = document.querySelector('.typing-text');
+            if (subtitleElement) {
+                subtitleElement.textContent = '';
+            }
+            
+            // Update all section headings
+            const sectionHeadings = document.querySelectorAll('section h2');
+            if (sectionHeadings[0]) sectionHeadings[0].textContent = t.toolsTitle;
+            if (sectionHeadings[1]) sectionHeadings[1].textContent = t.weatherTitle || "🌤️ Weather Update Center";
+            if (sectionHeadings[2]) sectionHeadings[2].textContent = t.liveFunZone;
+            if (sectionHeadings[3]) sectionHeadings[3].textContent = t.chatTitle;
+            
+            // Update weather section elements
+            const weatherSectionTitle = document.getElementById('weather-section-title');
+            if (weatherSectionTitle) weatherSectionTitle.textContent = t.weatherTitle;
+            
+            const currentWeatherTitle = document.getElementById('current-weather-title');
+            if (currentWeatherTitle) currentWeatherTitle.textContent = t.currentWeather || "Current Weather";
+            
+            const weatherNewsTitle = document.getElementById('weather-news-title');
+            if (weatherNewsTitle) weatherNewsTitle.textContent = t.weatherNews;
+            
+            const cityInput = document.getElementById('city-input');
+            if (cityInput) cityInput.placeholder = t.weatherPlaceholder || "Enter city name (e.g., London, New York)";
+            
+            const weatherDesc = document.getElementById('weather-desc');
+            if (weatherDesc) weatherDesc.textContent = t.weatherDesc || "Enter city name to see weather";
+            
+            const location = document.getElementById('location');
+            if (location) location.textContent = t.location || "📍 Location";
+            
+            const humidityLabel = document.getElementById('humidity-label');
+            if (humidityLabel) humidityLabel.textContent = t.humidity || "আর্দ্রতা";
+            
+            const windSpeedLabel = document.getElementById('wind-speed-label');
+            if (windSpeedLabel) windSpeedLabel.textContent = t.windSpeed || "বাতাসের গতি";
+            
+            const useLocationBtn = document.getElementById('use-location-btn');
+            if (useLocationBtn) useLocationBtn.textContent = t.useLocation || "📍 Use My Location";
+            
+            const refreshNewsBtn = document.getElementById('refresh-news-btn');
+            if (refreshNewsBtn) refreshNewsBtn.textContent = t.refreshNews || "🔄 নতুন সংবাদ লোড করুন";
+            
+            // Update weather news items with current language
+            updateWeatherNewsLanguage(t);
+            
+            // Update tool cards
+            const toolCards = document.querySelectorAll('.tool-card');
+            const toolData = [
+                { title: t.textGenerator, desc: t.textGeneratorDesc },
+                { title: t.imageAnalyzer, desc: t.imageAnalyzerDesc },
+                { title: t.codeAssistant, desc: t.codeAssistantDesc },
+                { title: t.languageTranslator, desc: t.languageTranslatorDesc },
+                { title: t.mathSolver, desc: t.mathSolverDesc },
+                { title: t.creativeWriter, desc: t.creativeWriterDesc },
+                { title: t.quizGenerator, desc: t.quizGeneratorDesc },
+                { title: t.studyHelper, desc: t.studyHelperDesc },
+                { title: t.jokeGenerator, desc: t.jokeGeneratorDesc }
+            ];
+            
+            toolCards.forEach((card, index) => {
+                if (toolData[index]) {
+                    const h3 = card.querySelector('h3');
+                    const p = card.querySelector('p');
+                    const button = card.querySelector('button');
+                    if (h3) h3.textContent = toolData[index].title;
+                    if (p) p.textContent = toolData[index].desc;
+                    if (button) button.textContent = t.tryNow;
+                }
+            });
+            
+            // Update chat interface
+            document.querySelector('#chat-input').placeholder = t.chatPlaceholder;
+            document.querySelector('button[onclick="sendMessage()"]').textContent = t.send;
+            
+            // Update Live Fun Zone
+            const liveFunZoneTitle = document.getElementById('live-fun-zone-title');
+            if (liveFunZoneTitle) liveFunZoneTitle.textContent = t.liveFunZone;
+            
+            const dailyJokeTitle = document.getElementById('daily-joke-title');
+            if (dailyJokeTitle) dailyJokeTitle.textContent = t.dailyJoke;
+            
+            const jokeLoadingText = document.getElementById('joke-loading-text');
+            if (jokeLoadingText) jokeLoadingText.textContent = t.jokeLoadingText;
+            
+            const jokesEnjoyedText = document.getElementById('jokes-enjoyed-text');
+            if (jokesEnjoyedText) jokesEnjoyedText.textContent = t.jokesEnjoyedText;
+            
+            const getNewJokeBtn = document.getElementById('get-new-joke-btn');
+            if (getNewJokeBtn) getNewJokeBtn.textContent = t.getNewJoke;
+            
+            const surpriseMeBtn = document.getElementById('surprise-me-btn');
+            if (surpriseMeBtn) surpriseMeBtn.textContent = t.surpriseMe;
+            
+            const chooseTypeText = document.getElementById('choose-type-text');
+            if (chooseTypeText) chooseTypeText.textContent = t.chooseType;
+            
+            // Update joke category buttons
+            const funnyBtn = document.getElementById('funny-btn');
+            if (funnyBtn) funnyBtn.textContent = t.funny;
+            
+            const dadJokesBtn = document.getElementById('dad-jokes-btn');
+            if (dadJokesBtn) dadJokesBtn.textContent = t.dadJokes;
+            
+            const smartBtn = document.getElementById('smart-btn');
+            if (smartBtn) smartBtn.textContent = t.smart;
+            
+            const sillyBtn = document.getElementById('silly-btn');
+            if (sillyBtn) sillyBtn.textContent = t.silly;
+            
+            // Update footer
+            document.querySelector('footer p').textContent = t.footer;
+            
+            // Update AI greeting
+            const chatOutput = document.getElementById('ai-chat-output');
+            chatOutput.innerHTML = `<div class="chat-message ai-message">${t.aiGreeting}</div>`;
+            
+            // Set RTL for Arabic and Persian
+            if (lang === 'ar' || lang === 'fa') {
+                document.documentElement.dir = 'rtl';
+                document.body.style.fontFamily = "'Amiri', 'Noto Sans Arabic', serif";
+            } else {
+                document.documentElement.dir = 'ltr';
+                document.body.style.fontFamily = "'Inter', sans-serif";
+            }
+        }
+
+        languageSelector.addEventListener('change', function() {
+            currentLanguage = this.value;
+            localStorage.setItem('language', currentLanguage);
+            updateLanguage(currentLanguage);
+            setTimeout(typeWriter, 500); // Restart typing animation with new language
+        });
+
+        // Function to update weather news language
+        function updateWeatherNewsLanguage(t) {
+            const news1Title = document.getElementById('news-1-title');
+            if (news1Title) news1Title.textContent = t.news1Title || "🌡️ Global Temperature Update";
+            
+            const news1Desc = document.getElementById('news-1-desc');
+            if (news1Desc) news1Desc.textContent = t.news1Desc || "Latest climate monitoring reports show temperature variations across different regions.";
+            
+            const news1Link = document.getElementById('news-1-link');
+            if (news1Link) news1Link.textContent = t.news1Link || "Read More →";
+            
+            const news2Title = document.getElementById('news-2-title');
+            if (news2Title) news2Title.textContent = t.news2Title || "🌧️ Monsoon Forecast";
+            
+            const news2Desc = document.getElementById('news-2-desc');
+            if (news2Desc) news2Desc.textContent = t.news2Desc || "Seasonal weather patterns and rainfall predictions for upcoming months.";
+            
+            const news2Link = document.getElementById('news-2-link');
+            if (news2Link) news2Link.textContent = t.news2Link || "View Forecast →";
+            
+            const news3Title = document.getElementById('news-3-title');
+            if (news3Title) news3Title.textContent = t.news3Title || "⚡ Storm Alerts";
+            
+            const news3Desc = document.getElementById('news-3-desc');
+            if (news3Desc) news3Desc.textContent = t.news3Desc || "Real-time storm tracking and severe weather warnings for your safety.";
+            
+            const news3Link = document.getElementById('news-3-link');
+            if (news3Link) news3Link.textContent = t.news3Link || "View Alerts →";
+            
+            const news4Title = document.getElementById('news-4-title');
+            if (news4Title) news4Title.textContent = t.news4Title || "🌍 Climate Updates";
+            
+            const news4Desc = document.getElementById('news-4-desc');
+            if (news4Desc) news4Desc.textContent = t.news4Desc || "Environmental news and climate change updates from around the world.";
+            
+            const news4Link = document.getElementById('news-4-link');
+            if (news4Link) news4Link.textContent = t.news4Link || "Learn More →";
+        }
+
+        // Initialize language
+        updateLanguage(currentLanguage);
+
+        // Typing animation for subtitle
+        function typeWriter() {
+            const texts = {
+                en: "🚀 ABID'S AI Where Ideas Meet Intelligence ✨",
+                ar: "🚀 ذكاء عبيد الاصطناعي حيث تلتقي الأفكار بالذكاء ✨",
+                hi: "🚀 अबीद का AI जहाँ विचार बुद्धिमत्ता से मिलते हैं ✨",
+                fa: "🚀 هوش مصنوعی عبید جایی که ایده‌ها با هوش ملاقات می‌کنند ✨",
+                bn: "🚀 আবিদের AI যেখানে ধারণা বুদ্ধিমত্তার সাথে মিলিত হয় ✨"
+            };
+            
+            const text = texts[currentLanguage];
+            const typingElement = document.querySelector('.typing-text');
+            let i = 0;
+            
+            typingElement.textContent = '';
+            
+            function type() {
+                if (i < text.length) {
+                    typingElement.textContent += text.charAt(i);
+                    i++;
+                    setTimeout(type, 50);
+                }
+            }
+            
+            type();
+        }
+
+        // Start typing animation
+        setTimeout(typeWriter, 1000);
+
+        // Joke functionality with expanded collection
+        let jokeCounter = parseInt(localStorage.getItem('jokeCounter')) || 0;
+        document.getElementById('joke-counter').textContent = jokeCounter;
+        const jokes = {
+            en: {
+                funny: [
+                    "Why don't scientists trust atoms? Because they make up everything! 😄",
+                    "I told my wife she was drawing her eyebrows too high. She looked surprised! 😂",
+                    "Why don't eggs tell jokes? They'd crack each other up! 🥚",
+                    "What do you call a fake noodle? An impasta! 🍝",
+                    "Why did the scarecrow win an award? He was outstanding in his field! 🌾",
+                    "I'm reading a book about anti-gravity. It's impossible to put down! 📚",
+                    "Why don't skeletons fight each other? They don't have the guts! 💀",
+                    "What's the best thing about Switzerland? I don't know, but the flag is a big plus! 🇨🇭",
+                    "I used to hate facial hair, but then it grew on me! 🧔",
+                    "What do you call a sleeping bull? A bulldozer! 🐂"
+                ],
+                dad: [
+                    "I'm afraid for the calendar. Its days are numbered! 📅",
+                    "What do you call a fish wearing a crown? A king fish! 👑🐟",
+                    "Why don't scientists trust atoms? Because they make up everything! ⚛️",
+                    "I only know 25 letters of the alphabet. I don't know Y! 🤷‍♂️",
+                    "What's the best thing about Switzerland? I don't know, but the flag is a big plus! ➕",
+                    "Why did the math book look so sad? Because it had too many problems! 📖",
+                    "What do you call a bear with no teeth? A gummy bear! 🐻",
+                    "Why don't eggs tell jokes? They'd crack each other up! 🥚"
+                ],
+                smart: [
+                    "There are 10 types of people in the world: those who understand binary and those who don't! 💻",
+                    "Why do programmers prefer dark mode? Because light attracts bugs! 🐛",
+                    "A photon checks into a hotel. The bellhop asks, 'Can I help you with your luggage?' The photon says, 'No thanks, I'm traveling light!' 💡",
+                    "Why did the physicist break up with the biologist? There was no chemistry! ⚗️",
+                    "Schrödinger's cat walks into a bar. And doesn't. 🐱",
+                    "Why do mathematicians like parks? Because of all the natural logs! 🌳"
+                ],
+                silly: [
+                    "What do you call a dinosaur that crashes his car? Tyrannosaurus Wrecks! 🦕",
+                    "Why don't elephants use computers? They're afraid of the mouse! 🐘🖱️",
+                    "What do you call a pig that does karate? A pork chop! 🐷🥋",
+                    "Why did the banana go to the doctor? It wasn't peeling well! 🍌",
+                    "What do you call a cow with no legs? Ground beef! 🐄",
+                    "Why did the cookie go to the doctor? Because it felt crumbly! 🍪"
+                ]
+            },
+            ar: [
+                "لماذا لا يثق العلماء بالذرات؟ لأنها تختلق كل شيء! 😄",
+                "قلت لزوجتي أنها ترسم حاجبيها عالياً جداً. بدت مندهشة! 😂",
+                "لماذا لا تحكي البيض النكت؟ لأنها ستنكسر من الضحك! 🥚",
+                "ماذا تسمي المعكرونة المزيفة؟ معكرونة مقلدة! 🍝",
+                "لماذا فاز الفزاعة بجائزة؟ لأنه كان متميزاً في مجاله! 🌾",
+                "أقرأ كتاباً عن الجاذبية المضادة. من المستحيل وضعه! 📚",
+                "لماذا لا تتقاتل الهياكل العظمية؟ لأنها لا تملك الشجاعة! 💀",
+                "ما أفضل شيء في سويسرا؟ لا أعرف، لكن العلم إيجابي كبير! 🇨🇭"
+            ],
+            hi: [
+                "वैज्ञानिक परमाणुओं पर भरोसा क्यों नहीं करते? क्योंकि वे सब कुछ बना देते हैं! 😄",
+                "मैंने अपनी पत्नी से कहा कि वह अपनी भौंहें बहुत ऊंची बना रही है। वह हैरान लग रही थी! 😂",
+                "अंडे जोक्स क्यों नहीं सुनाते? क्योंकि वे हंसते-हंसते फूट जाएंगे! 🥚",
+                "नकली नूडल्स को क्या कहते हैं? इम्पास्ता! 🍝",
+                "बिजूका को पुरस्कार क्यों मिला? क्योंकि वह अपने क्षेत्र में उत्कृष्ट था! 🌾",
+                "मैं गुरुत्वाकर्षण विरोधी पुस्तक पढ़ रहा हूं। इसे रखना असंभव है! 📚",
+                "कंकाल आपस में क्यों नहीं लड़ते? क्योंकि उनमें हिम्मत नहीं है! 💀",
+                "स्विट्जरलैंड की सबसे अच्छी बात क्या है? पता नहीं, लेकिन झंडा बड़ा प्लस है! 🇨🇭"
+            ],
+            fa: [
+                "چرا دانشمندان به اتم‌ها اعتماد نمی‌کنند؟ چون آنها همه چیز را می‌سازند! 😄",
+                "به همسرم گفتم ابروهایش را خیلی بالا می‌کشد. متعجب به نظر رسید! 😂",
+                "چرا تخم‌ها جوک نمی‌گویند؟ چون از خنده می‌ترکند! 🥚",
+                "به ماکارونی تقلبی چه می‌گویند؟ ایمپاستا! 🍝",
+                "چرا مترسک جایزه برد؟ چون در زمینه‌اش برجسته بود! 🌾",
+                "کتابی درباره ضد جاذبه می‌خوانم. غیرممکن است آن را بگذارم! 📚",
+                "چرا اسکلت‌ها با هم نمی‌جنگند؟ چون جرأت ندارند! 💀",
+                "بهترین چیز سوئیس چیست؟ نمی‌دانم، اما پرچمش یک مثبت بزرگ است! 🇨🇭"
+            ],
+            bn: [
+                "বিজ্ঞানীরা পরমাণুর উপর বিশ্বাস করেন না কেন? কারণ তারা সবকিছু তৈরি করে! 😄",
+                "আমি আমার স্ত্রীকে বললাম সে তার ভ্রু খুব উঁচুতে আঁকছে। সে অবাক লাগছিল! 😂",
+                "ডিম কেন জোকস বলে না? কারণ তারা হাসতে হাসতে ফেটে যাবে! 🥚",
+                "নকল নুডলসকে কী বলে? ইমপাস্তা! 🍝",
+                "কাকতাড়ুয়া কেন পুরস্কার জিতেছিল? কারণ সে তার ক্ষেত্রে অসাধারণ ছিল! 🌾",
+                "আমি মাধ্যাকর্ষণ বিরোধী বই পড়ছি। এটা রাখা অসম্ভব! 📚",
+                "কঙ্কালরা কেন একে অপরের সাথে লড়াই করে না? কারণ তাদের সাহস নেই! 💀",
+                "সুইজারল্যান্ডের সেরা জিনিস কী? জানি না, তবে পতাকাটি একটি বড় প্লাস! 🇨🇭"
+            ]
+        };
+
+        function getNewJoke() {
+            const jokeElement = document.getElementById('live-joke');
+            const counterElement = document.getElementById('joke-counter');
+            
+            if (!jokeElement || !counterElement) {
+                console.error('Joke elements not found');
+                return;
+            }
+            
+            let currentJokes;
+            if (currentLanguage === 'en') {
+                // For English, get random joke from all categories
+                const allCategories = Object.values(jokes.en);
+                const randomCategory = allCategories[Math.floor(Math.random() * allCategories.length)];
+                currentJokes = randomCategory;
+            } else {
+                currentJokes = jokes[currentLanguage] || jokes.bn;
+            }
+            
+            const randomJoke = currentJokes[Math.floor(Math.random() * currentJokes.length)];
+            
+            // Animation effect
+            jokeElement.style.transform = 'scale(0.9)';
+            jokeElement.style.opacity = '0.5';
+            jokeElement.innerHTML = `
+                <div class="text-center">
+                    <div class="text-4xl mb-2 animate-spin">🎭</div>
+                    <div>Loading a fresh joke for you... 😄</div>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                jokeElement.innerHTML = `
+                    <div class="text-center">
+                        <div class="text-4xl mb-3">🎪</div>
+                        <div class="text-lg font-medium">${randomJoke}</div>
+                    </div>
+                `;
+                jokeElement.style.transform = 'scale(1)';
+                jokeElement.style.opacity = '1';
+                
+                // Update counter
+                jokeCounter++;
+                counterElement.textContent = jokeCounter;
+                localStorage.setItem('jokeCounter', jokeCounter);
+                
+                // Add celebration effect
+                if (jokeCounter % 5 === 0) {
+                    showCelebration();
+                }
+            }, 1200);
+        }
+
+        function getJokeByCategory(category) {
+            const jokeElement = document.getElementById('live-joke');
+            const counterElement = document.getElementById('joke-counter');
+            
+            if (!jokeElement || !counterElement) {
+                console.error('Joke elements not found');
+                return;
+            }
+            
+            let currentJokes;
+            if (currentLanguage === 'en' && jokes.en[category]) {
+                currentJokes = jokes.en[category];
+            } else {
+                currentJokes = jokes[currentLanguage] || jokes.bn;
+            }
+            
+            const randomJoke = currentJokes[Math.floor(Math.random() * currentJokes.length)];
+            
+            jokeElement.style.transform = 'scale(0.9)';
+            jokeElement.style.opacity = '0.5';
+            jokeElement.innerHTML = `
+                <div class="text-center">
+                    <div class="text-4xl mb-2 animate-bounce">🎯</div>
+                    <div>Loading ${category} jokes for you... 😄</div>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                jokeElement.innerHTML = `
+                    <div class="text-center">
+                        <div class="text-4xl mb-3">${getCategoryEmoji(category)}</div>
+                        <div class="text-lg font-medium">${randomJoke}</div>
+                    </div>
+                `;
+                jokeElement.style.transform = 'scale(1)';
+                jokeElement.style.opacity = '1';
+                
+                jokeCounter++;
+                counterElement.textContent = jokeCounter;
+                localStorage.setItem('jokeCounter', jokeCounter);
+            }, 1000);
+        }
+
+        function getRandomJokeCategory() {
+            // Just call getNewJoke for simplicity and consistency
+            getNewJoke();
+        }
+
+        function getCategoryEmoji(category) {
+            const emojis = {
+                funny: '😂',
+                dad: '👨',
+                smart: '🧠',
+                silly: '🤪'
+            };
+            return emojis[category] || '🎪';
+        }
+
+        function showCelebration() {
+            const celebration = document.createElement('div');
+            celebration.innerHTML = '🎉 Milestone Reached! 🎉';
+            celebration.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-4xl font-bold text-purple-600 z-50 animate-bounce';
+            document.body.appendChild(celebration);
+            
+            setTimeout(() => {
+                document.body.removeChild(celebration);
+            }, 2000);
+        }
+
+        // Load initial joke after page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(loadInitialEnglishJoke, 2000);
+        });
+
+        function loadInitialEnglishJoke() {
+            const jokeElement = document.getElementById('live-joke');
+            const counterElement = document.getElementById('joke-counter');
+            
+            if (!jokeElement || !counterElement) {
+                console.error('Joke elements not found');
+                return;
+            }
+            
+            // Always show English joke first, regardless of current language
+            const englishJokes = jokes.en.funny;
+            const randomJoke = englishJokes[Math.floor(Math.random() * englishJokes.length)];
+            
+            // Animation effect
+            jokeElement.style.transform = 'scale(0.9)';
+            jokeElement.style.opacity = '0.5';
+            jokeElement.innerHTML = `
+                <div class="text-center">
+                    <div class="text-4xl mb-2 animate-spin">🎭</div>
+                    <div>Loading a fresh English joke for you... 😄</div>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                jokeElement.innerHTML = `
+                    <div class="text-center">
+                        <div class="text-4xl mb-3">🎪</div>
+                        <div class="text-lg font-medium">${randomJoke}</div>
+                    </div>
+                `;
+                jokeElement.style.transform = 'scale(1)';
+                jokeElement.style.opacity = '1';
+                
+                // Update counter
+                jokeCounter++;
+                counterElement.textContent = jokeCounter;
+                localStorage.setItem('jokeCounter', jokeCounter);
+            }, 1200);
+        }
+
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const darkIcon = document.getElementById('theme-toggle-dark-icon');
+        const lightIcon = document.getElementById('theme-toggle-light-icon');
+
+        // Check for saved theme preference or default to 'light'
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        
+        if (currentTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+            darkIcon.classList.add('hidden');
+            lightIcon.classList.remove('hidden');
+        } else {
+            darkIcon.classList.remove('hidden');
+            lightIcon.classList.add('hidden');
+        }
+
+        themeToggle.addEventListener('click', function() {
+            document.documentElement.classList.toggle('dark');
+            
+            if (document.documentElement.classList.contains('dark')) {
+                localStorage.setItem('theme', 'dark');
+                darkIcon.classList.add('hidden');
+                lightIcon.classList.remove('hidden');
+            } else {
+                localStorage.setItem('theme', 'light');
+                darkIcon.classList.remove('hidden');
+                lightIcon.classList.add('hidden');
+            }
+        });
+
+        // Chat functionality
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const output = document.getElementById('ai-chat-output');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            const userMessage = document.createElement('div');
+            userMessage.className = 'chat-message user-message';
+            userMessage.textContent = message;
+            output.appendChild(userMessage);
+            
+            // Clear input
+            input.value = '';
+            
+            // Show typing indicator
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'chat-message ai-message typing-indicator';
+            typingIndicator.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+            output.appendChild(typingIndicator);
+            
+            // Scroll to bottom
+            output.scrollTop = output.scrollHeight;
+            
+            // Simulate AI response
+            setTimeout(() => {
+                output.removeChild(typingIndicator);
+                
+                const aiMessage = document.createElement('div');
+                aiMessage.className = 'chat-message ai-message';
+                aiMessage.textContent = getAIResponse(message);
+                output.appendChild(aiMessage);
+                
+                output.scrollTop = output.scrollHeight;
+            }, 1500);
+        }
+
+        function getAIResponse(message) {
+            const responses = [
+                "That's an interesting question! Let me think about that...",
+                "I understand what you're asking. Here's my perspective on that topic.",
+                "Great question! Based on my knowledge, I'd say...",
+                "I'm here to help! Let me provide you with some insights.",
+                "That's a thoughtful inquiry. From what I know...",
+                "I appreciate you asking! Here's what I can tell you about that.",
+                "Excellent question! Let me break that down for you.",
+                "I'm glad you brought that up. My analysis suggests...",
+                "That's definitely worth exploring. In my understanding...",
+                "Thanks for the question! I'd be happy to help with that."
+            ];
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+
+        // Allow Enter key to send message
+        document.getElementById('chat-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Tool modal functions
+        function openTextGenerator() {
+            document.getElementById('modal-title').textContent = 'Text Generator';
+            document.getElementById('modal-content').innerHTML = `
+                <div class="space-y-4">
+                    <textarea id="text-prompt" placeholder="Enter your prompt here..." class="w-full h-32 p-3 border rounded-lg resize-none bg-white/70 dark:bg-slate-700/70"></textarea>
+                    <button onclick="generateText()" class="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 px-4 rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all">Generate Text</button>
+                    <div id="generated-text" class="p-4 bg-slate-100 dark:bg-slate-700 rounded-lg min-h-[100px] hidden"></div>
+                </div>
+            `;
+            document.getElementById('tool-modal').classList.remove('hidden');
+        }
+
+        function openImageAnalyzer() {
+            document.getElementById('modal-title').textContent = 'Image Analyzer';
+            document.getElementById('modal-content').innerHTML = `
+                <div class="space-y-4">
+                    <div class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-8 text-center">
+                        <p class="text-slate-500 dark:text-slate-400">Image analysis feature coming soon!</p>
+                        <p class="text-sm text-slate-400 dark:text-slate-500 mt-2">This is a demo interface</p>
+                    </div>
+                </div>
+            `;
+            document.getElementById('tool-modal').classList.remove('hidden');
+        }
+
+        function openCodeAssistant() {
+            document.getElementById('modal-title').textContent = 'Code Assistant';
+            document.getElementById('modal-content').innerHTML = `
+                <div class="space-y-4">
+                    <textarea id="code-input" placeholder="Describe your coding problem or paste your code here..." class="w-full h-32 p-3 border rounded-lg resize-none bg-white/70 dark:bg-slate-700/70 font-mono text-sm"></textarea>
+                    <button onclick="analyzeCode()" class="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white py-2 px-4 rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all">Analyze Code</button>
+                    <div id="code-analysis" class="p-4 bg-slate-100 dark:bg-slate-700 rounded-lg min-h-[100px] hidden"></div>
+                </div>
+            `;
+            document.getElementById('tool-modal').classList.remove('hidden');
+        }
+
+        function openTranslator() {
+            document.getElementById('modal-title').textContent = 'Language Translator';
+            document.getElementById('modal-content').innerHTML = `
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <select class="p-2 border rounded-lg bg-white/70 dark:bg-slate-700/70">
+                            <option>English</option>
+                            <option>Spanish</option>
+                            <option>French</option>
+                            <option>German</option>
+                        </select>
+                        <select class="p-2 border rounded-lg bg-white/70 dark:bg-slate-700/70">
+                            <option>Spanish</option>
+                            <option>English</option>
+                            <option>French</option>
+                            <option>German</option>
+                        </select>
+                    </div>
+                    <textarea id="translate-input" placeholder="Enter text to translate..." class="w-full h-24 p-3 border rounded-lg resize-none bg-white/70 dark:bg-slate-700/70"></textarea>
+                    <button onclick="translateText()" class="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-2 px-4 rounded-lg hover:from-orange-600 hover:to-red-600 transition-all">Translate</button>
+                    <div id="translation-result" class="p-4 bg-slate-100 dark:bg-slate-700 rounded-lg min-h-[80px] hidden"></div>
+                </div>
+            `;
+            document.getElementById('tool-modal').classList.remove('hidden');
+        }
+
+        function openMathSolver() {
+            document.getElementById('modal-title').textContent = 'Math Solver';
+            document.getElementById('modal-content').innerHTML = `
+                <div class="space-y-4">
+                    <input type="text" id="math-problem" placeholder="Enter your math problem (e.g., 2x + 5 = 15)" class="w-full p-3 border rounded-lg bg-white/70 dark:bg-slate-700/70">
+                    <button onclick="solveMath()" class="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2 px-4 rounded-lg hover:from-indigo-600 hover:to-purple-600 transition-all">Solve</button>
+                    <div id="math-solution" class="p-4 bg-slate-100 dark:bg-slate-700 rounded-lg min-h-[100px] hidden"></div>
+                </div>
+            `;
+            document.getElementById('tool-modal').classList.remove('hidden');
+        }
+
+        function openCreativeWriter() {
+            document.getElementById('modal-title').textContent = 'Creative Writer';
+            document.getElementById('modal-content').innerHTML = `
+                <div class="space-y-4">
+                    <select id="writing-type" class="w-full p-2 border rounded-lg bg-white/70 dark:bg-slate-700/70">
+                        <option>Short Story</option>
+                        <option>Poem</option>
+                        <option>Song Lyrics</option>
+                        <option>Essay</option>
+                    </select>
+                    <textarea id="writing-prompt" placeholder="Enter your creative prompt..." class="w-full h-24 p-3 border rounded-lg resize-none bg-white/70 dark:bg-slate-700/70"></textarea>
+                    <button onclick="generateCreativeContent()" class="w-full bg-gradient-to-r from-pink-500 to-rose-500 text-white py-2 px-4 rounded-lg hover:from-pink-600 hover:to-rose-600 transition-all">Create</button>
+                    <div id="creative-content" class="p-4 bg-slate-100 dark:bg-slate-700 rounded-lg min-h-[150px] hidden"></div>
+                </div>
+            `;
+            document.getElementById('tool-modal').classList.remove('hidden');
+        }
+
+        function openQuizGenerator() {
+            document.getElementById('modal-title').textContent = 'Quiz Generator';
+            document.getElementById('modal-content').innerHTML = `
+                <div class="space-y-4">
+                    <select id="quiz-subject" class="w-full p-2 border rounded-lg bg-white/70 dark:bg-slate-700/70">
+                        <option>Mathematics</option>
+                        <option>Science</option>
+                        <option>History</option>
+                        <option>Geography</option>
+                        <option>Literature</option>
+                    </select>
+                    <select id="quiz-difficulty" class="w-full p-2 border rounded-lg bg-white/70 dark:bg-slate-700/70">
+                        <option>Easy</option>
+                        <option>Medium</option>
+                        <option>Hard</option>
+                    </select>
+                    <input type="number" id="quiz-questions" placeholder="Number of questions (1-10)" min="1" max="10" value="5" class="w-full p-3 border rounded-lg bg-white/70 dark:bg-slate-700/70">
+                    <button onclick="generateQuiz()" class="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 px-4 rounded-lg hover:from-yellow-600 hover:to-orange-600 transition-all">Generate Quiz</button>
+                    <div id="quiz-content" class="p-4 bg-slate-100 dark:bg-slate-700 rounded-lg min-h-[200px] hidden"></div>
+                </div>
+            `;
+            document.getElementById('tool-modal').classList.remove('hidden');
+        }
+
+        function openStudyHelper() {
+            document.getElementById('modal-title').textContent = 'Study Helper';
+            document.getElementById('modal-content').innerHTML = `
+                <div class="space-y-4">
+                    <select id="study-type" class="w-full p-2 border rounded-lg bg-white/70 dark:bg-slate-700/70">
+                        <option>Explain Concept</option>
+                        <option>Homework Help</option>
+                        <option>Study Plan</option>
+                        <option>Memory Tips</option>
+                    </select>
+                    <textarea id="study-topic" placeholder="Enter your topic or question..." class="w-full h-32 p-3 border rounded-lg resize-none bg-white/70 dark:bg-slate-700/70"></textarea>
+                    <button onclick="getStudyHelp()" class="w-full bg-gradient-to-r from-teal-500 to-green-500 text-white py-2 px-4 rounded-lg hover:from-teal-600 hover:to-green-600 transition-all">Get Help</button>
+                    <div id="study-help" class="p-4 bg-slate-100 dark:bg-slate-700 rounded-lg min-h-[150px] hidden"></div>
+                </div>
+            `;
+            document.getElementById('tool-modal').classList.remove('hidden');
+        }
+
+        function openJokeGenerator() {
+            document.getElementById('modal-title').textContent = 'Joke Generator';
+            document.getElementById('modal-content').innerHTML = `
+                <div class="space-y-4">
+                    <select id="joke-type" class="w-full p-2 border rounded-lg bg-white/70 dark:bg-slate-700/70">
+                        <option>Dad Jokes</option>
+                        <option>Puns</option>
+                        <option>One-liners</option>
+                        <option>Knock-knock</option>
+                        <option>Random</option>
+                    </select>
+                    <button onclick="generateJoke()" class="w-full bg-gradient-to-r from-red-500 to-pink-500 text-white py-2 px-4 rounded-lg hover:from-red-600 hover:to-pink-600 transition-all">Tell Me a Joke! 😄</button>
+                    <div id="joke-output" class="p-4 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg min-h-[100px] hidden border-2 border-yellow-300 dark:border-yellow-600">
+                        <div class="text-center text-4xl mb-2">🎭</div>
+                        <div id="joke-text" class="text-lg font-medium text-center"></div>
+                    </div>
+                    <button onclick="generateJoke()" class="w-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white py-2 px-4 rounded-lg hover:from-purple-600 hover:to-indigo-600 transition-all hidden" id="another-joke">Another One! 🎪</button>
+                </div>
+            `;
+            document.getElementById('tool-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('tool-modal').classList.add('hidden');
+        }
+
+        // Tool functions
+        function generateText() {
+            const prompt = document.getElementById('text-prompt').value;
+            const output = document.getElementById('generated-text');
+            
+            if (!prompt.trim()) return;
+            
+            output.classList.remove('hidden');
+            output.innerHTML = '<div class="pulse-animation">Generating text...</div>';
+            
+            setTimeout(() => {
+                output.innerHTML = `
+                    <h4 class="font-semibold mb-2">Generated Text:</h4>
+                    <p>Based on your prompt "${prompt}", here's a sample generated response. This is a demonstration of how AI text generation would work with your input. The actual implementation would connect to a real AI service to provide meaningful, contextual content.</p>
+                `;
+            }, 2000);
+        }
+
+        function analyzeCode() {
+            const code = document.getElementById('code-input').value;
+            const output = document.getElementById('code-analysis');
+            
+            if (!code.trim()) return;
+            
+            output.classList.remove('hidden');
+            output.innerHTML = '<div class="pulse-animation">Analyzing code...</div>';
+            
+            setTimeout(() => {
+                output.innerHTML = `
+                    <h4 class="font-semibold mb-2">Code Analysis:</h4>
+                    <p class="mb-2">✅ Code structure looks good</p>
+                    <p class="mb-2">💡 Suggestion: Consider adding error handling</p>
+                    <p class="text-sm text-slate-600 dark:text-slate-400">This is a demo analysis. Real implementation would provide detailed code review and suggestions.</p>
+                `;
+            }, 2000);
+        }
+
+        function translateText() {
+            const text = document.getElementById('translate-input').value;
+            const output = document.getElementById('translation-result');
+            
+            if (!text.trim()) return;
+            
+            output.classList.remove('hidden');
+            output.innerHTML = '<div class="pulse-animation">Translating...</div>';
+            
+            setTimeout(() => {
+                output.innerHTML = `
+                    <h4 class="font-semibold mb-2">Translation:</h4>
+                    <p>"${text}" → "Hola, este es un ejemplo de traducción"</p>
+                    <p class="text-sm text-slate-600 dark:text-slate-400 mt-2">Demo translation. Real implementation would use translation APIs.</p>
+                `;
+            }, 1500);
+        }
+
+        function solveMath() {
+            const problem = document.getElementById('math-problem').value;
+            const output = document.getElementById('math-solution');
+            
+            if (!problem.trim()) return;
+            
+            output.classList.remove('hidden');
+            output.innerHTML = '<div class="pulse-animation">Solving...</div>';
+            
+            setTimeout(() => {
+                output.innerHTML = `
+                    <h4 class="font-semibold mb-2">Solution:</h4>
+                    <p class="mb-2">Problem: ${problem}</p>
+                    <p class="mb-2">Step 1: Isolate the variable</p>
+                    <p class="mb-2">Step 2: Simplify</p>
+                    <p class="font-semibold">Answer: x = 5</p>
+                    <p class="text-sm text-slate-600 dark:text-slate-400 mt-2">Demo solution. Real implementation would solve actual math problems.</p>
+                `;
+            }, 2000);
+        }
+
+        function generateCreativeContent() {
+            const type = document.getElementById('writing-type').value;
+            const prompt = document.getElementById('writing-prompt').value;
+            const output = document.getElementById('creative-content');
+            
+            if (!prompt.trim()) return;
+            
+            output.classList.remove('hidden');
+            output.innerHTML = '<div class="pulse-animation">Creating content...</div>';
+            
+            setTimeout(() => {
+                output.innerHTML = `
+                    <h4 class="font-semibold mb-2">Generated ${type}:</h4>
+                    <div class="italic">
+                        <p class="mb-2">Once upon a time, in a world where AI and creativity merged...</p>
+                        <p class="mb-2">The possibilities were endless, and imagination knew no bounds.</p>
+                        <p>Every prompt became a doorway to new stories and ideas.</p>
+                    </div>
+                    <p class="text-sm text-slate-600 dark:text-slate-400 mt-4">Demo content based on "${prompt}". Real implementation would generate unique creative content.</p>
+                `;
+            }, 2500);
+        }
+
+        function generateQuiz() {
+            const subject = document.getElementById('quiz-subject').value;
+            const difficulty = document.getElementById('quiz-difficulty').value;
+            const numQuestions = document.getElementById('quiz-questions').value;
+            const output = document.getElementById('quiz-content');
+            
+            output.classList.remove('hidden');
+            output.innerHTML = '<div class="pulse-animation">Generating quiz...</div>';
+            
+            setTimeout(() => {
+                output.innerHTML = `
+                    <h4 class="font-semibold mb-4">${subject} Quiz - ${difficulty} Level (${numQuestions} Questions)</h4>
+                    <div class="space-y-4">
+                        <div class="p-3 border rounded-lg">
+                            <p class="font-medium">1. What is 2 + 2?</p>
+                            <div class="mt-2 space-y-1">
+                                <label class="flex items-center"><input type="radio" name="q1" class="mr-2"> A) 3</label>
+                                <label class="flex items-center"><input type="radio" name="q1" class="mr-2"> B) 4</label>
+                                <label class="flex items-center"><input type="radio" name="q1" class="mr-2"> C) 5</label>
+                            </div>
+                        </div>
+                        <div class="p-3 border rounded-lg">
+                            <p class="font-medium">2. Which planet is closest to the Sun?</p>
+                            <div class="mt-2 space-y-1">
+                                <label class="flex items-center"><input type="radio" name="q2" class="mr-2"> A) Venus</label>
+                                <label class="flex items-center"><input type="radio" name="q2" class="mr-2"> B) Mercury</label>
+                                <label class="flex items-center"><input type="radio" name="q2" class="mr-2"> C) Earth</label>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-all">Submit Quiz</button>
+                    <p class="text-sm text-slate-600 dark:text-slate-400 mt-2">Demo quiz. Real implementation would generate ${numQuestions} ${difficulty.toLowerCase()} ${subject.toLowerCase()} questions.</p>
+                `;
+            }, 2000);
+        }
+
+        function getStudyHelp() {
+            const type = document.getElementById('study-type').value;
+            const topic = document.getElementById('study-topic').value;
+            const output = document.getElementById('study-help');
+            
+            if (!topic.trim()) return;
+            
+            output.classList.remove('hidden');
+            output.innerHTML = '<div class="pulse-animation">Analyzing your question...</div>';
+            
+            setTimeout(() => {
+                output.innerHTML = `
+                    <h4 class="font-semibold mb-2">${type}: ${topic}</h4>
+                    <div class="space-y-2">
+                        <p><strong>📚 Key Points:</strong></p>
+                        <ul class="list-disc list-inside ml-4 space-y-1">
+                            <li>Break down complex concepts into smaller parts</li>
+                            <li>Use visual aids and diagrams when possible</li>
+                            <li>Practice with examples and exercises</li>
+                            <li>Connect new information to what you already know</li>
+                        </ul>
+                        <p><strong>💡 Study Tips:</strong></p>
+                        <p>Create a study schedule, take regular breaks, and review material multiple times for better retention.</p>
+                    </div>
+                    <p class="text-sm text-slate-600 dark:text-slate-400 mt-4">Demo study help for "${topic}". Real implementation would provide detailed, subject-specific guidance.</p>
+                `;
+            }, 2000);
+        }
+
+        function generateJoke() {
+            const type = document.getElementById('joke-type').value;
+            const output = document.getElementById('joke-output');
+            const jokeText = document.getElementById('joke-text');
+            const anotherBtn = document.getElementById('another-joke');
+            
+            const jokesByType = {
+                'Dad Jokes': [
+                    "Why don't scientists trust atoms? Because they make up everything! 😄",
+                    "I'm reading a book about anti-gravity. It's impossible to put down! 📚",
+                    "Why don't skeletons fight each other? They don't have the guts! 💀"
+                ],
+                'Puns': [
+                    "What do you call a fake noodle? An impasta! 🍝",
+                    "I used to hate facial hair, but then it grew on me! 🧔",
+                    "What's the best thing about Switzerland? I don't know, but the flag is a big plus! 🇨🇭"
+                ],
+                'One-liners': [
+                    "I told my wife she was drawing her eyebrows too high. She looked surprised! 😂",
+                    "Why don't eggs tell jokes? They'd crack each other up! 🥚",
+                    "I'm terrified of elevators, so I'm going to start taking steps to avoid them! 🏃"
+                ],
+                'Knock-knock': [
+                    "Knock knock! Who's there? Interrupting cow. Interrupting cow w-- MOOOOO! 🐄",
+                    "Knock knock! Who's there? Lettuce. Lettuce who? Lettuce in, it's cold out here! 🥬",
+                    "Knock knock! Who's there? Orange. Orange who? Orange you glad I didn't say banana? 🍊"
+                ],
+                'Random': jokes[currentLanguage] || jokes.en
+            };
+            
+            const selectedJokes = jokesByType[type] || jokesByType['Random'];
+            const randomJoke = selectedJokes[Math.floor(Math.random() * selectedJokes.length)];
+            
+            output.classList.remove('hidden');
+            jokeText.innerHTML = 'Loading joke... 🎭';
+            
+            setTimeout(() => {
+                jokeText.innerHTML = randomJoke;
+                anotherBtn.classList.remove('hidden');
+            }, 1000);
+        }
+
+        // Weather functionality
+        function getWeather() {
+            const city = document.getElementById('city-input').value.trim();
+            if (!city) return;
+            
+            // Show loading state
+            document.getElementById('temperature').textContent = 'Loading...';
+            document.getElementById('weather-desc').textContent = 'Getting weather data...';
+            document.getElementById('location').textContent = '📍 Searching...';
+            document.getElementById('humidity').textContent = '--%';
+            document.getElementById('wind-speed').textContent = '-- km/h';
+            
+            // Simulate weather API call with demo data
+            setTimeout(() => {
+                const weatherData = getRandomWeatherData(city);
+                updateWeatherDisplay(weatherData);
+            }, 1500);
+        }
+        
+        function getCurrentLocation() {
+            if (navigator.geolocation) {
+                document.getElementById('temperature').textContent = 'Getting location...';
+                document.getElementById('weather-desc').textContent = 'Using your location...';
+                
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        // Simulate getting weather for current location
+                        setTimeout(() => {
+                            const weatherData = getRandomWeatherData('Your Location');
+                            updateWeatherDisplay(weatherData);
+                        }, 1500);
+                    },
+                    function(error) {
+                        // Fallback to demo data
+                        const weatherData = getRandomWeatherData('Current Location');
+                        updateWeatherDisplay(weatherData);
+                    }
+                );
+            } else {
+                // Fallback for browsers without geolocation
+                const weatherData = getRandomWeatherData('Your Area');
+                updateWeatherDisplay(weatherData);
+            }
+        }
+        
+        function getRandomWeatherData(location) {
+            const conditions = [
+                { icon: '☀️', desc: 'Sunny', temp: Math.floor(Math.random() * 15) + 20 },
+                { icon: '⛅', desc: 'Partly Cloudy', temp: Math.floor(Math.random() * 10) + 18 },
+                { icon: '☁️', desc: 'Cloudy', temp: Math.floor(Math.random() * 8) + 15 },
+                { icon: '🌧️', desc: 'Rainy', temp: Math.floor(Math.random() * 10) + 12 },
+                { icon: '⛈️', desc: 'Thunderstorm', temp: Math.floor(Math.random() * 8) + 16 },
+                { icon: '🌤️', desc: 'Partly Sunny', temp: Math.floor(Math.random() * 12) + 22 },
+                { icon: '🌦️', desc: 'Light Rain', temp: Math.floor(Math.random() * 6) + 14 }
+            ];
+            
+            const randomCondition = conditions[Math.floor(Math.random() * conditions.length)];
+            
+            return {
+                location: location,
+                temperature: randomCondition.temp,
+                description: randomCondition.desc,
+                icon: randomCondition.icon,
+                humidity: Math.floor(Math.random() * 40) + 40,
+                windSpeed: Math.floor(Math.random() * 20) + 5
+            };
+        }
+        
+        function updateWeatherDisplay(data) {
+            document.getElementById('weather-icon').textContent = data.icon;
+            document.getElementById('temperature').textContent = `${data.temperature}°C`;
+            document.getElementById('weather-desc').textContent = data.description;
+            document.getElementById('location').textContent = `📍 ${data.location}`;
+            document.getElementById('humidity').textContent = `${data.humidity}%`;
+            document.getElementById('wind-speed').textContent = `${data.windSpeed} km/h`;
+        }
+        
+        function refreshWeatherNews() {
+            const newsContainer = document.getElementById('weather-news');
+            const refreshBtn = document.querySelector('button[onclick="refreshWeatherNews()"]');
+            
+            refreshBtn.innerHTML = '🔄 Refreshing...';
+            refreshBtn.disabled = true;
+            
+            // Simulate news refresh
+            setTimeout(() => {
+                const newsItems = [
+                    {
+                        title: '🌡️ Global Temperature Update',
+                        desc: 'Latest climate monitoring reports show temperature variations across different regions.',
+                        link: 'https://weather.com/news',
+                        color: 'blue'
+                    },
+                    {
+                        title: '🌧️ Monsoon Forecast',
+                        desc: 'Seasonal weather patterns and rainfall predictions for upcoming months.',
+                        link: 'https://www.accuweather.com/en/weather-news',
+                        color: 'green'
+                    },
+                    {
+                        title: '⚡ Storm Alerts',
+                        desc: 'Real-time storm tracking and severe weather warnings for your safety.',
+                        link: 'https://www.weatherunderground.com/news',
+                        color: 'orange'
+                    },
+                    {
+                        title: '🌍 Climate Updates',
+                        desc: 'Environmental news and climate change updates from around the world.',
+                        link: 'https://www.bbc.com/weather',
+                        color: 'purple'
+                    },
+                    {
+                        title: '🌪️ Tornado Watch',
+                        desc: 'Severe weather conditions and tornado warnings in affected areas.',
+                        link: 'https://www.weather.gov/',
+                        color: 'red'
+                    },
+                    {
+                        title: '❄️ Winter Advisory',
+                        desc: 'Cold weather preparations and winter storm forecasts.',
+                        link: 'https://www.noaa.gov/',
+                        color: 'cyan'
+                    },
+                    {
+                        title: '🌊 Flood Warnings',
+                        desc: 'River levels and flood risk assessments for coastal regions.',
+                        link: 'https://www.nhc.noaa.gov/',
+                        color: 'teal'
+                    }
+                ];
+                
+                // Shuffle and pick 4 random news items
+                const shuffled = newsItems.sort(() => 0.5 - Math.random());
+                const selectedNews = shuffled.slice(0, 4);
+                
+                newsContainer.innerHTML = selectedNews.map(item => `
+                    <div class="bg-white/50 dark:bg-slate-800/50 p-4 rounded-lg border-l-4 border-${item.color}-500">
+                        <h4 class="font-semibold text-${item.color}-600 mb-2">${item.title}</h4>
+                        <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">${item.desc}</p>
+                        <a href="${item.link}" target="_blank" rel="noopener noreferrer" class="text-${item.color}-500 hover:text-${item.color}-700 text-sm font-medium">Read More →</a>
+                    </div>
+                `).join('');
+                
+                refreshBtn.innerHTML = '🔄 Refresh News';
+                refreshBtn.disabled = false;
+            }, 2000);
+        }
+        
+        // Allow Enter key for weather search
+        document.getElementById('city-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                getWeather();
+            }
+        });
+        
+        // Auto-refresh weather news every 5 minutes
+        setInterval(refreshWeatherNews, 300000);
+
+        // Close modal when clicking outside
+        document.getElementById('tool-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98f0eb49a528b6db',t:'MTc2MDU0ODExMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
