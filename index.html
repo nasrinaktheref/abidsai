@@ -407,10 +407,10 @@
                         <div class="mt-6">
                             <p id="choose-type-text" class="text-sm text-gray-600 dark:text-gray-400 mb-3">Choose your favorite type:</p>
                             <div class="flex flex-wrap gap-2 justify-center">
-                                <button id="funny-btn" onclick="getJokeByCategory('funny')" class="px-4 py-2 bg-yellow-200 hover:bg-yellow-300 dark:bg-yellow-800 dark:hover:bg-yellow-700 rounded-full text-sm font-medium transition-all text-white">😂 Funny</button>
-                                <button id="dad-jokes-btn" onclick="getJokeByCategory('dad')" class="px-4 py-2 bg-blue-200 hover:bg-blue-300 dark:bg-blue-800 dark:hover:bg-blue-700 rounded-full text-sm font-medium transition-all text-white">👨 Dad Jokes</button>
-                                <button id="smart-btn" onclick="getJokeByCategory('smart')" class="px-4 py-2 bg-green-200 hover:bg-green-300 dark:bg-green-800 dark:hover:bg-green-700 rounded-full text-sm font-medium transition-all text-white">🧠 Smart</button>
-                                <button id="silly-btn" onclick="getJokeByCategory('silly')" class="px-4 py-2 bg-pink-200 hover:bg-pink-300 dark:bg-pink-800 dark:hover:bg-pink-700 rounded-full text-sm font-medium transition-all text-white">🤪 Silly</button>
+                                <button id="funny-btn" onclick="getJokeByCategory('funny')" class="px-4 py-2 bg-yellow-200 hover:bg-yellow-300 dark:bg-yellow-800 dark:hover:bg-yellow-700 rounded-full text-sm font-medium transition-all text-black dark:text-white">😂 Funny</button>
+                                <button id="dad-jokes-btn" onclick="getJokeByCategory('dad')" class="px-4 py-2 bg-blue-200 hover:bg-blue-300 dark:bg-blue-800 dark:hover:bg-blue-700 rounded-full text-sm font-medium transition-all text-black dark:text-white">👨 Dad Jokes</button>
+                                <button id="smart-btn" onclick="getJokeByCategory('smart')" class="px-4 py-2 bg-green-200 hover:bg-green-300 dark:bg-green-800 dark:hover:bg-green-700 rounded-full text-sm font-medium transition-all text-black dark:text-white">🧠 Smart</button>
+                                <button id="silly-btn" onclick="getJokeByCategory('silly')" class="px-4 py-2 bg-pink-200 hover:bg-pink-300 dark:bg-pink-800 dark:hover:bg-pink-700 rounded-full text-sm font-medium transition-all text-black dark:text-white">🤪 Silly</button>
                             </div>
                         </div>
                     </div>
@@ -735,8 +735,10 @@
 
         // Language functionality
         const languageSelector = document.getElementById('language-selector');
-        let currentLanguage = localStorage.getItem('language') || 'bn';
-        languageSelector.value = currentLanguage;
+        let currentLanguage = localStorage.getItem('language') || 'en';
+        
+        // Set English as default in the selector
+        languageSelector.value = 'en';
 
         function updateLanguage(lang) {
             const t = translations[lang];
@@ -918,8 +920,10 @@
             if (news4Link) news4Link.textContent = t.news4Link || "Learn More →";
         }
 
-        // Initialize language
-        updateLanguage(currentLanguage);
+        // Force English as default language
+        currentLanguage = 'en';
+        localStorage.setItem('language', 'en');
+        updateLanguage('en');
 
         // Typing animation for subtitle
         function typeWriter() {
@@ -1299,75 +1303,124 @@
 
         // Tool modal functions
         function openTextGenerator() {
-            document.getElementById('modal-title').textContent = 'Text Generator';
+            document.getElementById('modal-title').textContent = 'টেক্সট জেনারেটর';
             document.getElementById('modal-content').innerHTML = `
-                <div class="space-y-4">
-                    <textarea id="text-prompt" placeholder="Enter your prompt here..." class="w-full h-32 p-3 border rounded-lg resize-none bg-white/70 dark:bg-slate-700/70"></textarea>
-                    <button onclick="generateText()" class="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 px-4 rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all">Generate Text</button>
-                    <div id="generated-text" class="p-4 bg-slate-100 dark:bg-slate-700 rounded-lg min-h-[100px] hidden"></div>
+                <div class="space-y-6">
+                    <div class="text-center mb-4">
+                        <div class="text-6xl mb-3">✨</div>
+                        <p class="text-lg text-gray-600 dark:text-gray-300">AI দিয়ে সৃজনশীল কন্টেন্ট তৈরি করুন</p>
+                    </div>
+                    <textarea id="text-prompt" placeholder="এখানে আপনার প্রম্পট লিখুন..." class="w-full h-32 p-4 border-2 border-purple-300 rounded-xl resize-none bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 dark:bg-slate-700/70 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all text-lg"></textarea>
+                    <button onclick="generateText()" class="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-4 px-6 rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all shadow-lg hover:shadow-xl text-lg font-semibold transform hover:scale-105">
+                        ✨ টেক্সট তৈরি করুন
+                    </button>
+                    <div id="generated-text" class="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 dark:bg-slate-700 rounded-xl min-h-[120px] hidden border-2 border-blue-200 dark:border-blue-600"></div>
                 </div>
             `;
             document.getElementById('tool-modal').classList.remove('hidden');
         }
 
         function openImageAnalyzer() {
-            document.getElementById('modal-title').textContent = 'Image Analyzer';
+            document.getElementById('modal-title').textContent = 'ইমেজ অ্যানালাইজার';
             document.getElementById('modal-content').innerHTML = `
-                <div class="space-y-4">
-                    <div class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-8 text-center">
-                        <p class="text-slate-500 dark:text-slate-400">Image analysis feature coming soon!</p>
-                        <p class="text-sm text-slate-400 dark:text-slate-500 mt-2">This is a demo interface</p>
+                <div class="space-y-6">
+                    <div class="text-center mb-4">
+                        <div class="text-6xl mb-3">🖼️</div>
+                        <p class="text-lg text-gray-600 dark:text-gray-300">AI দিয়ে ছবি বিশ্লেষণ এবং বর্ণনা করুন</p>
                     </div>
+                    <div class="border-2 border-dashed border-blue-300 dark:border-blue-600 rounded-xl p-12 text-center bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30 hover:border-blue-400 transition-all">
+                        <div class="text-5xl mb-4">📸</div>
+                        <p class="text-xl font-semibold text-blue-600 dark:text-blue-400 mb-2">ইমেজ অ্যানালাইসিস ফিচার শীঘ্রই আসছে!</p>
+                        <p class="text-lg text-blue-500 dark:text-blue-300 mb-4">এটি একটি ডেমো ইন্টারফেস</p>
+                        <div class="flex justify-center space-x-2">
+                            <div class="w-3 h-3 bg-blue-500 rounded-full animate-bounce"></div>
+                            <div class="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                            <div class="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                        </div>
+                    </div>
+                    <button class="w-full bg-gradient-to-r from-sky-500 to-cyan-400 text-white py-4 px-6 rounded-xl hover:from-sky-600 hover:to-cyan-500 transition-all shadow-lg hover:shadow-xl text-lg font-semibold transform hover:scale-105" disabled>
+                        🔜 শীঘ্রই উপলব্ধ হবে
+                    </button>
                 </div>
             `;
             document.getElementById('tool-modal').classList.remove('hidden');
         }
 
         function openCodeAssistant() {
-            document.getElementById('modal-title').textContent = 'Code Assistant';
+            document.getElementById('modal-title').textContent = 'কোড অ্যাসিস্ট্যান্ট';
             document.getElementById('modal-content').innerHTML = `
-                <div class="space-y-4">
-                    <textarea id="code-input" placeholder="Describe your coding problem or paste your code here..." class="w-full h-32 p-3 border rounded-lg resize-none bg-white/70 dark:bg-slate-700/70 font-mono text-sm"></textarea>
-                    <button onclick="analyzeCode()" class="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white py-2 px-4 rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all">Analyze Code</button>
-                    <div id="code-analysis" class="p-4 bg-slate-100 dark:bg-slate-700 rounded-lg min-h-[100px] hidden"></div>
+                <div class="space-y-6">
+                    <div class="text-center mb-4">
+                        <div class="text-6xl mb-3">💻</div>
+                        <p class="text-lg text-gray-600 dark:text-gray-300">প্রোগ্রামিং কাজে সাহায্য পান</p>
+                    </div>
+                    <textarea id="code-input" placeholder="আপনার কোডিং সমস্যা বর্ণনা করুন বা এখানে কোড পেস্ট করুন..." class="w-full h-40 p-4 border-2 border-green-300 rounded-xl resize-none bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 dark:bg-slate-700/70 font-mono text-sm focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all"></textarea>
+                    <button onclick="analyzeCode()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-400 text-white py-4 px-6 rounded-xl hover:from-emerald-600 hover:to-teal-500 transition-all shadow-lg hover:shadow-xl text-lg font-semibold transform hover:scale-105">
+                        🔍 কোড বিশ্লেষণ করুন
+                    </button>
+                    <div id="code-analysis" class="p-6 bg-gradient-to-br from-gray-50 to-slate-50 dark:from-gray-900/30 dark:to-slate-900/30 dark:bg-slate-700 rounded-xl min-h-[120px] hidden border-2 border-gray-200 dark:border-gray-600"></div>
                 </div>
             `;
             document.getElementById('tool-modal').classList.remove('hidden');
         }
 
         function openTranslator() {
-            document.getElementById('modal-title').textContent = 'Language Translator';
+            document.getElementById('modal-title').textContent = 'ভাষা অনুবাদক';
             document.getElementById('modal-content').innerHTML = `
-                <div class="space-y-4">
+                <div class="space-y-6">
+                    <div class="text-center mb-4">
+                        <div class="text-6xl mb-3">🌍</div>
+                        <p class="text-lg text-gray-600 dark:text-gray-300">ভাষার মধ্যে টেক্সট অনুবাদ করুন</p>
+                    </div>
                     <div class="grid grid-cols-2 gap-4">
-                        <select class="p-2 border rounded-lg bg-white/70 dark:bg-slate-700/70">
-                            <option>English</option>
-                            <option>Spanish</option>
-                            <option>French</option>
-                            <option>German</option>
+                        <select class="p-4 border-2 border-orange-300 rounded-xl bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/30 dark:to-red-900/30 dark:bg-slate-700/70 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all text-lg">
+                            <option>🇺🇸 English</option>
+                            <option>🇪🇸 Spanish</option>
+                            <option>🇫🇷 French</option>
+                            <option>🇩🇪 German</option>
+                            <option>🇧🇩 বাংলা</option>
+                            <option>🇸🇦 العربية</option>
                         </select>
-                        <select class="p-2 border rounded-lg bg-white/70 dark:bg-slate-700/70">
-                            <option>Spanish</option>
-                            <option>English</option>
-                            <option>French</option>
-                            <option>German</option>
+                        <select class="p-4 border-2 border-orange-300 rounded-xl bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/30 dark:to-red-900/30 dark:bg-slate-700/70 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all text-lg">
+                            <option>🇧🇩 বাংলা</option>
+                            <option>🇺🇸 English</option>
+                            <option>🇪🇸 Spanish</option>
+                            <option>🇫🇷 French</option>
+                            <option>🇩🇪 German</option>
+                            <option>🇸🇦 العربية</option>
                         </select>
                     </div>
-                    <textarea id="translate-input" placeholder="Enter text to translate..." class="w-full h-24 p-3 border rounded-lg resize-none bg-white/70 dark:bg-slate-700/70"></textarea>
-                    <button onclick="translateText()" class="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-2 px-4 rounded-lg hover:from-orange-600 hover:to-red-600 transition-all">Translate</button>
-                    <div id="translation-result" class="p-4 bg-slate-100 dark:bg-slate-700 rounded-lg min-h-[80px] hidden"></div>
+                    <textarea id="translate-input" placeholder="অনুবাদ করার জন্য টেক্সট লিখুন..." class="w-full h-32 p-4 border-2 border-orange-300 rounded-xl resize-none bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/30 dark:to-red-900/30 dark:bg-slate-700/70 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all text-lg"></textarea>
+                    <button onclick="translateText()" class="w-full bg-gradient-to-r from-orange-500 to-rose-500 text-white py-4 px-6 rounded-xl hover:from-orange-600 hover:to-rose-600 transition-all shadow-lg hover:shadow-xl text-lg font-semibold transform hover:scale-105">
+                        🔄 অনুবাদ করুন
+                    </button>
+                    <div id="translation-result" class="p-6 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/30 dark:to-orange-900/30 dark:bg-slate-700 rounded-xl min-h-[100px] hidden border-2 border-yellow-200 dark:border-yellow-600"></div>
                 </div>
             `;
             document.getElementById('tool-modal').classList.remove('hidden');
         }
 
         function openMathSolver() {
-            document.getElementById('modal-title').textContent = 'Math Solver';
+            document.getElementById('modal-title').textContent = 'গণিত সমাধানকারী';
             document.getElementById('modal-content').innerHTML = `
-                <div class="space-y-4">
-                    <input type="text" id="math-problem" placeholder="Enter your math problem (e.g., 2x + 5 = 15)" class="w-full p-3 border rounded-lg bg-white/70 dark:bg-slate-700/70">
-                    <button onclick="solveMath()" class="w-full bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2 px-4 rounded-lg hover:from-indigo-600 hover:to-purple-600 transition-all">Solve</button>
-                    <div id="math-solution" class="p-4 bg-slate-100 dark:bg-slate-700 rounded-lg min-h-[100px] hidden"></div>
+                <div class="space-y-6">
+                    <div class="text-center mb-4">
+                        <div class="text-6xl mb-3">🧮</div>
+                        <p class="text-lg text-gray-600 dark:text-gray-300">জটিল গাণিতিক সমস্যা সমাধান করুন</p>
+                    </div>
+                    <input type="text" id="math-problem" placeholder="আপনার গণিত সমস্যা লিখুন (যেমন: 2x + 5 = 15)" class="w-full p-4 border-2 border-indigo-300 rounded-xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 dark:bg-slate-700/70 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all text-lg">
+                    <div class="grid grid-cols-3 gap-3">
+                        <button onclick="insertMathSymbol('+')" class="p-3 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:hover:bg-blue-700 rounded-lg text-xl font-bold transition-all">+</button>
+                        <button onclick="insertMathSymbol('-')" class="p-3 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:hover:bg-blue-700 rounded-lg text-xl font-bold transition-all">-</button>
+                        <button onclick="insertMathSymbol('×')" class="p-3 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:hover:bg-blue-700 rounded-lg text-xl font-bold transition-all">×</button>
+                        <button onclick="insertMathSymbol('÷')" class="p-3 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:hover:bg-blue-700 rounded-lg text-xl font-bold transition-all">÷</button>
+                        <button onclick="insertMathSymbol('=')" class="p-3 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:hover:bg-blue-700 rounded-lg text-xl font-bold transition-all">=</button>
+                        <button onclick="insertMathSymbol('x')" class="p-3 bg-blue-100 hover:bg-blue-200 dark:bg-blue-800 dark:hover:bg-blue-700 rounded-lg text-xl font-bold transition-all">x</button>
+                    </div>
+                    <button onclick="solveMath()" class="w-full bg-gradient-to-r from-indigo-500 to-violet-500 text-white py-4 px-6 rounded-xl hover:from-indigo-600 hover:to-violet-600 transition-all shadow-lg hover:shadow-xl text-lg font-semibold transform hover:scale-105">
+                        🔢 সমাধান করুন
+                    </button>
+                    <div id="math-solution" class="p-6 bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900/30 dark:to-blue-900/30 dark:bg-slate-700 rounded-xl min-h-[120px] hidden border-2 border-green-200 dark:border-green-600"></div>
                 </div>
             `;
             document.getElementById('tool-modal').classList.remove('hidden');
@@ -1459,6 +1512,19 @@
             document.getElementById('tool-modal').classList.add('hidden');
         }
 
+        // Math symbol insertion function
+        function insertMathSymbol(symbol) {
+            const mathInput = document.getElementById('math-problem');
+            if (mathInput) {
+                const cursorPos = mathInput.selectionStart;
+                const textBefore = mathInput.value.substring(0, cursorPos);
+                const textAfter = mathInput.value.substring(cursorPos);
+                mathInput.value = textBefore + symbol + textAfter;
+                mathInput.focus();
+                mathInput.setSelectionRange(cursorPos + symbol.length, cursorPos + symbol.length);
+            }
+        }
+
         // Tool functions
         function generateText() {
             const prompt = document.getElementById('text-prompt').value;
@@ -1467,14 +1533,34 @@
             if (!prompt.trim()) return;
             
             output.classList.remove('hidden');
-            output.innerHTML = '<div class="pulse-animation">Generating text...</div>';
+            output.innerHTML = `
+                <div class="text-center">
+                    <div class="text-4xl mb-3 animate-spin">✨</div>
+                    <div class="text-lg font-medium text-purple-600 dark:text-purple-400">টেক্সট তৈরি হচ্ছে...</div>
+                    <div class="flex justify-center mt-3 space-x-1">
+                        <div class="w-2 h-2 bg-purple-500 rounded-full animate-bounce"></div>
+                        <div class="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                        <div class="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                    </div>
+                </div>
+            `;
             
             setTimeout(() => {
                 output.innerHTML = `
-                    <h4 class="font-semibold mb-2">Generated Text:</h4>
-                    <p>Based on your prompt "${prompt}", here's a sample generated response. This is a demonstration of how AI text generation would work with your input. The actual implementation would connect to a real AI service to provide meaningful, contextual content.</p>
+                    <div class="text-center mb-4">
+                        <div class="text-4xl mb-2">📝</div>
+                        <h4 class="text-xl font-bold text-purple-600 dark:text-purple-400 mb-4">তৈরি করা টেক্সট:</h4>
+                    </div>
+                    <div class="bg-white/70 dark:bg-slate-800/70 p-4 rounded-lg border-l-4 border-purple-500 mb-4">
+                        <p class="text-lg leading-relaxed">"${prompt}" এর উপর ভিত্তি করে, এখানে একটি নমুনা উত্পন্ন প্রতিক্রিয়া রয়েছে। এটি একটি প্রদর্শনী যে কীভাবে AI টেক্সট জেনারেশন আপনার ইনপুটের সাথে কাজ করবে। প্রকৃত বাস্তবায়ন অর্থপূর্ণ, প্রাসঙ্গিক বিষয়বস্তু প্রদান করতে একটি প্রকৃত AI সেবার সাথে সংযুক্ত হবে।</p>
+                    </div>
+                    <div class="text-center">
+                        <button onclick="generateText()" class="bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 px-6 rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all shadow-lg text-sm font-semibold">
+                            🔄 আবার তৈরি করুন
+                        </button>
+                    </div>
                 `;
-            }, 2000);
+            }, 2500);
         }
 
         function analyzeCode() {
@@ -1830,5 +1916,5 @@
             }
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98f0fb92e6d8b6db',t:'MTc2MDU0ODc4MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98fd56cdd7e533a4',t:'MTc2MDY3ODM0Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
